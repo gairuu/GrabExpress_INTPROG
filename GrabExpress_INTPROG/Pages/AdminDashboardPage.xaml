@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:GrabExpress_INTPROG.Models"
+             x:Class="GrabExpress_INTPROG.Pages.AdminDashboardPage"
+             Title="Admin Panel"
+             BackgroundColor="#F5F5F5"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Admin Header -->
+        <Border Grid.Row="0" BackgroundColor="#1A237E" StrokeThickness="0" Padding="20,15">
+            <HorizontalStackLayout Spacing="15" VerticalOptions="Center">
+                <Label Text="GrabExpress Admin" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                <Label Text="SYSTEM OVERVIEW" TextColor="#C5CAE9" FontSize="10" VerticalOptions="End" Margin="0,0,0,2" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20" Spacing="15">
+                <!-- Management Header -->
+                <Label Text="System Management" FontSize="18" FontAttributes="Bold" TextColor="#333333" Margin="0,10,0,0" />
+
+                <!-- Tabs segmented toggle -->
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="10" Margin="0,5,0,10">
+                    <Button x:Name="DriversTabBtn" Text="Drivers" BackgroundColor="#1A237E" TextColor="White" CornerRadius="10" Clicked="OnDriversTabClicked" HeightRequest="45" FontAttributes="Bold"/>
+                    <Button x:Name="CustomersTabBtn" Grid.Column="1" Text="Customers" BackgroundColor="#E0E0E0" TextColor="#333333" CornerRadius="10" Clicked="OnCustomersTabClicked" HeightRequest="45" FontAttributes="Bold"/>
+                </Grid>
+
+                <!-- Drivers Section -->
+                <VerticalStackLayout x:Name="DriversSection" Spacing="10">
+                    <Label Text="Registered Drivers" FontSize="14" TextColor="#666666" />
+                    <CollectionView x:Name="DriversList" x:DataType="models:Driver">
+                        <CollectionView.EmptyView>
+                            <Label Text="No drivers registered yet." TextColor="#888888" FontSize="14" HorizontalOptions="Center" Margin="0,20"/>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Driver">
+                                <Border BackgroundColor="White" StrokeShape="RoundRectangle 12" Padding="15" Margin="0,0,0,10">
+                                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="15">
+                                        <BoxView Grid.Column="0" Color="#00B14F" CornerRadius="20" WidthRequest="40" HeightRequest="40" VerticalOptions="Center"/>
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" FontAttributes="Bold" TextColor="#333333" />
+                                            <Label Text="{Binding LicenseNumber, StringFormat='Lic: {0}'}" FontSize="12" TextColor="#666666" />
+                                            <Label Text="{Binding ContactNumber}" FontSize="11" TextColor="#888888" />
+                                            <HorizontalStackLayout Spacing="6" Margin="0,4,0,0">
+                                                <Label Text="Status:" FontSize="11" TextColor="#888888" VerticalOptions="Center"/>
+                                                <Border StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center">
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding IsSuspended}" Value="True">
+                                                            <Setter Property="BackgroundColor" Value="#FFEBEE" />
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding IsSuspended}" Value="False">
+                                                            <Setter Property="BackgroundColor" Value="#E8F5E9" />
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <Label FontSize="10" FontAttributes="Bold">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsSuspended}" Value="True">
+                                                                <Setter Property="Text" Value="Suspended" />
+                                                                <Setter Property="TextColor" Value="#D32F2F" />
+                                                            </DataTrigger>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsSuspended}" Value="False">
+                                                                <Setter Property="Text" Value="{Binding Status}" />
+                                                                <Setter Property="TextColor" Value="#00B14F" />
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
+                                                </Border>
+                                            </HorizontalStackLayout>
+                                        </VerticalStackLayout>
+                                        <!-- Actions -->
+                                        <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+                                            <Button Text="🔄 Toggle" BackgroundColor="#4A148C" TextColor="White" FontSize="10" HeightRequest="32" Padding="8,0" CornerRadius="6"
+                                                    Clicked="OnToggleDriverStatusClicked" CommandParameter="{Binding DriverId}">
+                                                <Button.Triggers>
+                                                    <DataTrigger TargetType="Button" Binding="{Binding IsSuspended}" Value="True">
+                                                        <Setter Property="IsVisible" Value="False" />
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Button" Binding="{Binding IsSuspended}" Value="False">
+                                                        <Setter Property="IsVisible" Value="True" />
+                                                    </DataTrigger>
+                                                </Button.Triggers>
+                                            </Button>
+                                            <Button CommandParameter="{Binding .}" Clicked="OnDeleteDriverClicked" HeightRequest="32" Padding="10,0" CornerRadius="6" FontSize="11" TextColor="White">
+                                                <Button.Triggers>
+                                                    <DataTrigger TargetType="Button" Binding="{Binding IsSuspended}" Value="True">
+                                                        <Setter Property="Text" Value="🔓 Reactivate" />
+                                                        <Setter Property="BackgroundColor" Value="#00B14F" />
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Button" Binding="{Binding IsSuspended}" Value="False">
+                                                        <Setter Property="Text" Value="⛔ Suspend" />
+                                                        <Setter Property="BackgroundColor" Value="#D32F2F" />
+                                                    </DataTrigger>
+                                                </Button.Triggers>
+                                            </Button>
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+
+                <!-- Customers Section -->
+                <VerticalStackLayout x:Name="CustomersSection" IsVisible="False" Spacing="10">
+                    <Label Text="Registered Customers" FontSize="14" TextColor="#666666" />
+                    <CollectionView x:Name="CustomersList" x:DataType="models:Customer">
+                        <CollectionView.EmptyView>
+                            <Label Text="No customers registered yet." TextColor="#888888" FontSize="14" HorizontalOptions="Center" Margin="0,20"/>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Customer">
+                                <Border BackgroundColor="White" StrokeShape="RoundRectangle 12" Padding="15" Margin="0,0,0,10">
+                                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="15">
+                                        <BoxView Grid.Column="0" Color="#1565C0" CornerRadius="20" WidthRequest="40" HeightRequest="40" VerticalOptions="Center"/>
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" FontAttributes="Bold" TextColor="#333333" />
+                                            <Label Text="{Binding Email}" FontSize="12" TextColor="#666666" />
+                                            <Label Text="{Binding ContactNumber}" FontSize="11" TextColor="#888888" />
+                                            <HorizontalStackLayout Spacing="6" Margin="0,4,0,0">
+                                                <Border StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center">
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding IsSuspended}" Value="True">
+                                                            <Setter Property="BackgroundColor" Value="#FFEBEE" />
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding IsSuspended}" Value="False">
+                                                            <Setter Property="BackgroundColor" Value="#E8F5E9" />
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <Label FontSize="10" FontAttributes="Bold">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsSuspended}" Value="True">
+                                                                <Setter Property="Text" Value="Suspended" />
+                                                                <Setter Property="TextColor" Value="#D32F2F" />
+                                                            </DataTrigger>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsSuspended}" Value="False">
+                                                                <Setter Property="Text" Value="Active" />
+                                                                <Setter Property="TextColor" Value="#00B14F" />
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
+                                                </Border>
+                                            </HorizontalStackLayout>
+                                        </VerticalStackLayout>
+                                        <!-- Actions -->
+                                        <Button Grid.Column="2" CommandParameter="{Binding .}" Clicked="OnDeleteCustomerClicked" HeightRequest="32" Padding="10,0" CornerRadius="6" FontSize="11" TextColor="White" VerticalOptions="Center">
+                                            <Button.Triggers>
+                                                <DataTrigger TargetType="Button" Binding="{Binding IsSuspended}" Value="True">
+                                                    <Setter Property="Text" Value="🔓 Reactivate" />
+                                                    <Setter Property="BackgroundColor" Value="#00B14F" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Button" Binding="{Binding IsSuspended}" Value="False">
+                                                    <Setter Property="Text" Value="⛔ Suspend" />
+                                                    <Setter Property="BackgroundColor" Value="#D32F2F" />
+                                                </DataTrigger>
+                                            </Button.Triggers>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+
+                <Button Text="LOGOUT" 
+                        BackgroundColor="#D32F2F" 
+                        TextColor="White" 
+                        Margin="0,30,0,0" 
+                        CornerRadius="10"
+                        HeightRequest="48"
+                        FontAttributes="Bold"
+                        Clicked="OnLogoutClicked" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

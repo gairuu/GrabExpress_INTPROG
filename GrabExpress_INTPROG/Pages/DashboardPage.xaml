@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GrabExpress_INTPROG.Pages.DashboardPage"
+             Title="GrabExpress"
+             BackgroundColor="#F4F6F9"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Header -->
+        <Border Grid.Row="0" BackgroundColor="#00B14F" StrokeThickness="0" Padding="20,18,20,22">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnProfileTapped"/>
+            </Border.GestureRecognizers>
+            <HorizontalStackLayout Spacing="14" VerticalOptions="Center">
+                <Border BackgroundColor="#009940" StrokeThickness="0" StrokeShape="RoundRectangle 24"
+                        WidthRequest="48" HeightRequest="48">
+                    <Label Text="👤" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Border>
+                <VerticalStackLayout VerticalOptions="Center">
+                    <Label Text="Hello 👋" TextColor="#C8F5D8" FontSize="12"/>
+                    <Label x:Name="UserNameLabel" Text="Guest" TextColor="White"
+                           FontSize="18" FontAttributes="Bold"/>
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Hero Promo Banner -->
+                <Border BackgroundColor="#00B14F" StrokeThickness="0" Padding="20,0,20,28">
+                    <Border BackgroundColor="#009940" StrokeShape="RoundRectangle 16"
+                            StrokeThickness="0" Padding="18,16">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="4">
+                                <Label Text="🚀 Express Delivery" TextColor="White" FontSize="16" FontAttributes="Bold"/>
+                                <Label Text="Send parcels across the city in minutes!" TextColor="#C8F5D8" FontSize="12"/>
+                                <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 20"
+                                        Padding="12,6" HorizontalOptions="Start" Margin="0,8,0,0">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnExpressTapped"/>
+                                    </Border.GestureRecognizers>
+                                    <Label Text="Book Now →" TextColor="#00B14F" FontSize="12" FontAttributes="Bold"/>
+                                </Border>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="1" Text="📦" FontSize="52" VerticalOptions="Center"/>
+                        </Grid>
+                    </Border>
+                </Border>
+
+                <!-- Active Delivery Banner -->
+                <Border x:Name="ActiveDeliveryBanner" IsVisible="False"
+                        BackgroundColor="#1B5E20" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 14" Padding="16,12"
+                        Margin="20,0,20,16">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnResumeDeliveryTapped"/>
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Label Grid.Column="0" Text="📦" FontSize="26" VerticalOptions="Center"/>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                            <Label Text="Delivery In Progress" TextColor="White" FontAttributes="Bold" FontSize="14"/>
+                            <Label x:Name="ActiveDeliverySubLabel" Text="Tap to track your package →" TextColor="#A5D6A7" FontSize="12"/>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="›" FontSize="24" TextColor="White" VerticalOptions="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Services Section -->
+                <VerticalStackLayout Padding="20,4,20,16" Spacing="16">
+                    <Label Text="Our Services" FontSize="17" FontAttributes="Bold" TextColor="#1A1A1A"/>
+
+                    <!-- Core Business Service: Express Delivery -->
+                    <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="20">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnExpressTapped"/>
+                        </Border.GestureRecognizers>
+                        <Border.Shadow>
+                            <Shadow Brush="#00000015" Offset="0,4" Radius="12" Opacity="0.1"/>
+                        </Border.Shadow>
+                        <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="15" VerticalOptions="Center">
+                            <!-- Icon -->
+                            <Border Grid.Column="0" BackgroundColor="#E8F5E9" StrokeThickness="0" StrokeShape="RoundRectangle 14"
+                                    WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="📦" FontSize="28" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+
+                            <!-- Text -->
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Express Delivery" FontSize="16" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                                <Label Text="Send packages instantly and track them in real-time." FontSize="13" TextColor="#555555" LineBreakMode="WordWrap"/>
+                            </VerticalStackLayout>
+
+                            <!-- Arrow -->
+                            <Label Grid.Column="2" Text="➔" FontSize="20" FontAttributes="Bold" TextColor="#00A550" VerticalOptions="Center"/>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Delivery History -->
+                <VerticalStackLayout Padding="20,0,20,30" Spacing="10">
+                    <Label Text="Recent Activity" FontSize="17" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                    <Border BackgroundColor="White" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 16" Padding="18,14">
+                        <Border.Shadow>
+                            <Shadow Brush="#00000010" Offset="0,2" Radius="8" Opacity="0.08"/>
+                        </Border.Shadow>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnHistoryTapped"/>
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                            <Border Grid.Column="0" BackgroundColor="#F3E5F5" StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 12"
+                                    WidthRequest="46" HeightRequest="46">
+                                <Label Text="📋" FontSize="22"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Delivery History" FontAttributes="Bold"
+                                       FontSize="14" TextColor="#1A1A1A"/>
+                                <Label Text="View completed &amp; cancelled orders"
+                                       FontSize="12" TextColor="#888888"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="›" FontSize="22"
+                                   TextColor="#AAAAAA" VerticalOptions="Center"/>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

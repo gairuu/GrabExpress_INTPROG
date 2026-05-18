@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GrabExpress_INTPROG.Pages.ContactUsPage"
+             Title="Contact Us"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+    
+    <Grid RowDefinitions="Auto, *">
+        <!-- Custom Header with Back Button -->
+        <Border Grid.Row="0" BackgroundColor="#00B14F" StrokeThickness="0" Padding="15,10">
+            <HorizontalStackLayout Spacing="15" VerticalOptions="Center">
+                <Label Text="←" 
+                       TextColor="White" 
+                       FontSize="24" 
+                       FontAttributes="Bold" 
+                       VerticalOptions="Center"
+                       Padding="10,0,10,0">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBackTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Contact Us" TextColor="White" FontSize="20" FontAttributes="Bold" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="30" Spacing="25">
+            
+            <Label Text="Get in Touch"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   TextColor="#333333" />
+
+            <Label Text="Have a question or need help? Send us a message and we'll get back to you as soon as possible."
+                   FontSize="16"
+                   TextColor="#666666" />
+
+            <VerticalStackLayout Spacing="15">
+                <Border Stroke="#E0E0E0" StrokeShape="RoundRectangle 8" StrokeThickness="1" Padding="10,0">
+                    <Entry Placeholder="Subject" TextColor="#333333"/>
+                </Border>
+
+                <Border Stroke="#E0E0E0" StrokeShape="RoundRectangle 12" StrokeThickness="1" Padding="10,0" HeightRequest="150">
+                    <Editor Placeholder="Your Message" 
+                            AutoSize="Disabled" 
+                            TextColor="#333333" />
+                </Border>
+            </VerticalStackLayout>
+
+            <Button Text="SEND MESSAGE"
+                    BackgroundColor="#00B14F"
+                    TextColor="White"
+                    CornerRadius="8"
+                    HeightRequest="50"
+                    FontAttributes="Bold"
+                    Clicked="OnSendMessageClicked" />
+
+            <BoxView HeightRequest="1" Color="#EEEEEE" Margin="0,10" />
+
+            <Label Text="Other ways to reach us" FontSize="18" FontAttributes="Bold" TextColor="#333333" />
+
+            <VerticalStackLayout Spacing="15">
+                <HorizontalStackLayout Spacing="15">
+                    <Image Source="phone_icon.png" HeightRequest="24" />
+                    <Label Text="+1 234 567 890" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Spacing="15">
+                    <Image Source="email_icon.png" HeightRequest="24" />
+                    <Label Text="support@grabexpress.com" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Spacing="15">
+                    <Image Source="location_icon.png" HeightRequest="24" />
+                    <Label Text="123 Grab St, Metro Manila, Philippines" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

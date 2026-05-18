@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="GrabExpress_INTPROG.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:GrabExpress_INTPROG"
+    xmlns:pages="clr-namespace:GrabExpress_INTPROG.Pages"
+    Title="GrabExpress"
+    FlyoutBehavior="Disabled">
+
+    <!-- Auth Flow -->
+    <ShellContent
+        x:Name="LandingTab"
+        Title="Landing"
+        ContentTemplate="{DataTemplate pages:LandingPage}"
+        Route="LandingPage" />
+
+    <ShellContent
+        x:Name="LoginTab"
+        Title="Login"
+        ContentTemplate="{DataTemplate pages:LoginPage}"
+        Route="LoginPage" />
+
+    <!-- Main App Root -->
+    <ShellContent
+        x:Name="CustomerTab"
+        Title="Dashboard"
+        IsVisible="False"
+        ContentTemplate="{DataTemplate pages:DashboardPage}"
+        Route="DashboardPage" />
+
+    <ShellContent
+        x:Name="DriverTab"
+        Title="Driver Dashboard"
+        IsVisible="False"
+        ContentTemplate="{DataTemplate pages:DriverDashboardPage}"
+        Route="DriverDashboardPage" />
+
+    <ShellContent
+        x:Name="AdminTab"
+        Title="Admin Dashboard"
+        IsVisible="False"
+        ContentTemplate="{DataTemplate pages:AdminDashboardPage}"
+        Route="AdminDashboardPage" />
+
+</Shell>

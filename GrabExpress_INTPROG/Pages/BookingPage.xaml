@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GrabExpress_INTPROG.Pages.BookingPage"
+             Title="Book Delivery"
+             BackgroundColor="#F4F6F9"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="Auto, *">
+        <Border Grid.Row="0" BackgroundColor="#00B14F" StrokeThickness="0" Padding="20,16">
+            <HorizontalStackLayout Spacing="14" VerticalOptions="Center">
+                <Border BackgroundColor="#009940" StrokeThickness="0" StrokeShape="RoundRectangle 10"
+                        WidthRequest="38" HeightRequest="38">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBackTapped"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="←" TextColor="White" FontSize="20" FontAttributes="Bold"
+                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Border>
+                <VerticalStackLayout VerticalOptions="Center">
+                    <Label Text="Book a Delivery" TextColor="White" FontSize="19" FontAttributes="Bold"/>
+                    <Label Text="Fast, safe, and reliable" TextColor="#C8F5D8" FontSize="12"/>
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20" Spacing="16">
+
+                <!-- Location Card -->
+                <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="20">
+                    <Border.Shadow>
+                        <Shadow Brush="#00000012" Offset="0,4" Radius="14" Opacity="0.12"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="0">
+                        <Label Text="📍 Pickup Location" FontSize="13" FontAttributes="Bold" TextColor="#444444" Margin="0,0,0,6"/>
+                        <Border Stroke="#E8E8E8" StrokeShape="RoundRectangle 12" StrokeThickness="1.5"
+                                BackgroundColor="#FAFAFA" Padding="14,4" Margin="0,0,0,4">
+                            <Entry x:Name="PickupEntry" Placeholder="Where to pick up from?"
+                                   TextColor="#1A1A1A" PlaceholderColor="#BBBBBB" TextChanged="OnLocationTextChanged"/>
+                        </Border>
+                        <CollectionView x:Name="PickupSuggestions" IsVisible="False" HeightRequest="120" Margin="0,0,0,4" x:DataType="x:String">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Border BackgroundColor="#F9F9F9" StrokeThickness="0" Padding="14,10" Margin="0,1">
+                                        <Label Text="{Binding .}" TextColor="#333333" FontSize="14">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnSuggestionTapped" CommandParameter="{Binding .}"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <Grid ColumnDefinitions="*, Auto, *" Margin="0,10,0,10" ColumnSpacing="10">
+                            <BoxView Grid.Column="0" HeightRequest="1" BackgroundColor="#EEEEEE" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="↕" TextColor="#00B14F" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center"/>
+                            <BoxView Grid.Column="2" HeightRequest="1" BackgroundColor="#EEEEEE" VerticalOptions="Center"/>
+                        </Grid> 
+
+                        <Label Text="🏁 Drop-off Location" FontSize="13" FontAttributes="Bold" TextColor="#444444" Margin="0,0,0,6"/>
+                        <Border Stroke="#E8E8E8" StrokeShape="RoundRectangle 12" StrokeThickness="1.5"
+                                BackgroundColor="#FAFAFA" Padding="14,4">
+                            <Entry x:Name="DropoffEntry" Placeholder="Where to deliver to?"
+                                   TextColor="#1A1A1A" PlaceholderColor="#BBBBBB" TextChanged="OnLocationTextChanged"/>
+                        </Border>
+                        <CollectionView x:Name="DropoffSuggestions" IsVisible="False" HeightRequest="120" Margin="0,4,0,0" x:DataType="x:String">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Border BackgroundColor="#F9F9F9" StrokeThickness="0" Padding="14,10" Margin="0,1">
+                                        <Label Text="{Binding .}" TextColor="#333333" FontSize="14">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnSuggestionTapped" CommandParameter="{Binding .}"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Button Text="🔍  CALCULATE DELIVERY FEE" BackgroundColor="#00B14F" TextColor="White"
+                        CornerRadius="14" HeightRequest="54" FontAttributes="Bold" FontSize="15" Clicked="OnCalculateClicked"/>
+
+                <!-- Summary Card -->
+                <Border x:Name="SummaryBorder" IsVisible="False" BackgroundColor="White"
+                        StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="20">
+                    <Border.Shadow>
+                        <Shadow Brush="#00B14F20" Offset="0,4" Radius="14" Opacity="0.15"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="16">
+                        <Label Text="Booking Summary" FontSize="16" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                        <BoxView HeightRequest="1" BackgroundColor="#F0F0F0"/>
+                        <Grid ColumnDefinitions="*, Auto">
+                            <VerticalStackLayout>
+                                <Label Text="Estimated Fee" FontSize="13" TextColor="#888888"/>
+                                <Label x:Name="FeeLabel" Text="₱0.00" FontSize="28" FontAttributes="Bold" TextColor="#00B14F"/>
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1" BackgroundColor="#E8F5E9" StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 20" Padding="10,6" VerticalOptions="Center">
+                                <Label Text="✓ Insured" TextColor="#00B14F" FontSize="12" FontAttributes="Bold"/>
+                            </Border>
+                        </Grid>
+                        <Label Text="* Fee is calculated based on distance and includes basic coverage." FontSize="12" TextColor="#AAAAAA"/>
+                        <Button Text="✅  CONFIRM BOOKING" BackgroundColor="#00B14F" TextColor="White"
+                                CornerRadius="14" HeightRequest="54" FontAttributes="Bold" FontSize="15" Clicked="OnConfirmClicked"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Searching Overlay -->
+                <Border x:Name="SearchingLayout" IsVisible="False" BackgroundColor="White"
+                        StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="30">
+                    <Border.Shadow>
+                        <Shadow Brush="#00000012" Offset="0,4" Radius="14" Opacity="0.12"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout HorizontalOptions="Center" Spacing="14">
+                        <ActivityIndicator IsRunning="True" Color="#00B14F" HeightRequest="48" WidthRequest="48" HorizontalOptions="Center"/>
+                        <Label Text="Creating your booking..." HorizontalOptions="Center"
+                               FontAttributes="Bold" FontSize="15" TextColor="#1A1A1A"/>
+                        <Label Text="You'll be taken to the tracking page shortly." HorizontalOptions="Center"
+                               FontSize="13" TextColor="#888888" HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

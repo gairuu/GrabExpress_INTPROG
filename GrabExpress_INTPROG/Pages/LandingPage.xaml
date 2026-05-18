@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GrabExpress_INTPROG.Pages.LandingPage"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+    
+    <Grid RowDefinitions="*,Auto">
+        
+        <VerticalStackLayout Grid.Row="0" VerticalOptions="Center" Padding="30" Spacing="20">
+            <Image Source="landing_illustration.png"
+                   HeightRequest="250"
+                   HorizontalOptions="Center" />
+            
+            <Label Text="Your Everyday Delivery App"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   TextColor="#333333"
+                   HorizontalTextAlignment="Center" />
+            
+            <Label Text="GrabExpress is the fastest and most reliable way to send and receive parcels in your city."
+                   FontSize="16"
+                   TextColor="#666666"
+                   HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="1" Padding="30" Spacing="15">
+            <Button Text="GET STARTED"
+                    BackgroundColor="#00B14F"
+                    TextColor="White"
+                    CornerRadius="8"
+                    HeightRequest="55"
+                    FontAttributes="Bold"
+                    Clicked="OnGetStartedClicked" />
+            
+            <Button Text="I ALREADY HAVE AN ACCOUNT"
+                    BackgroundColor="Transparent"
+                    TextColor="#00B14F"
+                    BorderColor="#00B14F"
+                    BorderWidth="1"
+                    CornerRadius="8"
+                    HeightRequest="55"
+                    FontAttributes="Bold"
+                    Clicked="OnLoginClicked" />
+            
+            <Label Text="By continuing, you agree to our Terms of Service."
+                   FontSize="12"
+                   TextColor="#999999"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,10,0,0" />
+        </VerticalStackLayout>
+
+    </Grid>
+</ContentPage>

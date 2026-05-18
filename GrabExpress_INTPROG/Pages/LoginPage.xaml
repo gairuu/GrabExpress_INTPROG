@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GrabExpress_INTPROG.Pages.LoginPage"
+             Title="Login"
+             BackgroundColor="#F5F6FA"
+             Shell.NavBarIsVisible="False"
+             SizeChanged="OnPageSizeChanged">
+
+    <ScrollView>
+        <Grid RowDefinitions="260, *">
+
+            <!-- Top Green Hero -->
+            <Border Grid.Row="0" BackgroundColor="#00B14F" StrokeThickness="0"
+                    StrokeShape="RoundRectangle 0,0,36,36">
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10" Padding="15,40,15,30">
+                    <Label Text="📦" FontSize="52" HorizontalOptions="Center"/>
+                    <Label Text="GrabExpress" FontSize="30" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center"/>
+                    <Label Text="Fast. Safe. Reliable." FontSize="14" TextColor="#C8F5D8" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Form Card -->
+            <Border x:Name="FormCard" Grid.Row="1" BackgroundColor="White" StrokeThickness="0"
+                    StrokeShape="RoundRectangle 24"
+                    Margin="24,16,24,24" Padding="28,32"
+                    MaximumWidthRequest="450" HorizontalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="#00000020" Offset="0,4" Radius="20" Opacity="0.12"/>
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="0">
+
+                    <Label Text="Welcome back 👋" FontSize="22" FontAttributes="Bold" TextColor="#1A1A1A" Margin="0,0,0,4" HorizontalOptions="Center"/>
+                    <Label Text="Login to your account" FontSize="14" TextColor="#888888" Margin="0,0,0,28" HorizontalOptions="Center"/>
+
+                    <!-- Email -->
+                    <Label Text="Email Address" FontSize="13" FontAttributes="Bold" TextColor="#444444" Margin="0,0,0,6"/>
+                    <Border Stroke="#E8E8E8" StrokeShape="RoundRectangle 12" StrokeThickness="1.5"
+                            BackgroundColor="#FAFAFA" Padding="16,4" Margin="0,0,0,18">
+                        <Entry x:Name="EmailEntry" Placeholder="you@example.com"
+                               Keyboard="Email" TextColor="#1A1A1A"
+                               PlaceholderColor="#BBBBBB"/>
+                    </Border>
+
+                    <!-- Password -->
+                    <Label Text="Password" FontSize="13" FontAttributes="Bold" TextColor="#444444" Margin="0,0,0,6"/>
+                    <Border Stroke="#E8E8E8" StrokeShape="RoundRectangle 12" StrokeThickness="1.5"
+                            BackgroundColor="#FAFAFA" Padding="16,4" Margin="0,0,0,8">
+                        <Entry x:Name="PasswordEntry" Placeholder="Enter your password"
+                               IsPassword="True" TextColor="#1A1A1A"
+                               PlaceholderColor="#BBBBBB"/>
+                    </Border>
+
+                    <Label Text="Forgot Password?" TextColor="#00B14F" FontSize="13"
+                           FontAttributes="Bold" HorizontalOptions="End" Margin="0,0,0,28">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnForgotPasswordTapped"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                    <!-- Login Button -->
+                    <Button Text="LOG IN" BackgroundColor="#00B14F" TextColor="White"
+                            CornerRadius="14" HeightRequest="54" FontAttributes="Bold"
+                            FontSize="16" Margin="0,0,0,20" Clicked="OnLoginClicked"/>
+
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                        <Label Text="Don't have an account?" TextColor="#888888" FontSize="14"/>
+                        <Label Text="Sign Up" TextColor="#00B14F" FontAttributes="Bold" FontSize="14">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnSignUpTapped"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </HorizontalStackLayout>
+
+                </VerticalStackLayout>
+            </Border>
+
+        </Grid>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GrabExpress_INTPROG.Pages.DeliveryHistoryPage"
+             Title="Delivery History"
+             BackgroundColor="#F4F6F9"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Header -->
+        <Border Grid.Row="0" BackgroundColor="#00B14F" StrokeThickness="0" Padding="20,18,20,22">
+            <Grid ColumnDefinitions="Auto,*">
+                <Border Grid.Column="0" BackgroundColor="#009940" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 20" WidthRequest="36" HeightRequest="36"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBackTapped"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="←" FontSize="18" TextColor="White"
+                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Border>
+                <VerticalStackLayout Grid.Column="1" Margin="14,0,0,0" VerticalOptions="Center">
+                    <Label Text="📋 Delivery History" TextColor="White"
+                           FontSize="18" FontAttributes="Bold"/>
+                    <Label Text="Your past deliveries" TextColor="#C8F5D8" FontSize="12"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- Body -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20,20,20,30" Spacing="12">
+
+                <!-- Loading -->
+                <ActivityIndicator x:Name="LoadingIndicator" IsRunning="True" IsVisible="True"
+                                   Color="#00B14F" HorizontalOptions="Center" Margin="0,40,0,0"/>
+
+                <!-- Empty state -->
+                <VerticalStackLayout x:Name="EmptyState" IsVisible="False"
+                                     HorizontalOptions="Center" Spacing="12"
+                                     Margin="0,60,0,0">
+                    <Label Text="📭" FontSize="56" HorizontalOptions="Center"/>
+                    <Label Text="No deliveries yet" FontSize="16" FontAttributes="Bold"
+                           TextColor="#444444" HorizontalOptions="Center"/>
+                    <Label Text="Your completed and cancelled&#10;deliveries will appear here."
+                           FontSize="13" TextColor="#888888" HorizontalTextAlignment="Center"/>
+                </VerticalStackLayout>
+
+                <!-- Cards injected by code -->
+                <VerticalStackLayout x:Name="HistoryContainer" Spacing="10"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

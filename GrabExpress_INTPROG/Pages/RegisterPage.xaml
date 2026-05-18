@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GrabExpress_INTPROG.Pages.RegisterPage"
+             Title="Register"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False"
+             SizeChanged="OnPageSizeChanged">
+    
+    <Grid RowDefinitions="Auto, *">
+        <!-- Custom Header with Back Button -->
+        <Border Grid.Row="0" BackgroundColor="#00B14F" StrokeThickness="0" Padding="15,10">
+            <HorizontalStackLayout Spacing="15" VerticalOptions="Center">
+                <Label Text="←" 
+                       TextColor="White" 
+                       FontSize="24" 
+                       FontAttributes="Bold" 
+                       VerticalOptions="Center"
+                       Padding="10,0,10,0">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLoginTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Register" TextColor="White" FontSize="20" FontAttributes="Bold" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Border>
+ 
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout x:Name="FormCard" Padding="30" Spacing="20" MaximumWidthRequest="450" HorizontalOptions="Center">
+            
+            <Label Text="Create Account"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   TextColor="#333333"
+                   Margin="0,20,0,5"
+                   HorizontalOptions="Center" />
+
+            <Label Text="Join the GrabExpress community today."
+                   FontSize="14"
+                   TextColor="#666666"
+                   Margin="0,0,0,20"
+                   HorizontalOptions="Center"/>
+
+            <VerticalStackLayout Spacing="15">
+                <Border Stroke="#E0E0E0" StrokeShape="RoundRectangle 8" StrokeThickness="1" Padding="10,0">
+                    <Entry x:Name="FullNameEntry" Placeholder="Full Name" TextColor="#333333"/>
+                </Border>
+
+                <Border Stroke="#E0E0E0" StrokeShape="RoundRectangle 8" StrokeThickness="1" Padding="10,0">
+                    <Entry x:Name="EmailEntry" Placeholder="Email Address" Keyboard="Email" TextColor="#333333"/>
+                </Border>
+
+                <Border Stroke="#E0E0E0" StrokeShape="RoundRectangle 8" StrokeThickness="1" Padding="10,0">
+                    <Entry x:Name="PhoneEntry" Placeholder="Phone Number" Keyboard="Telephone" TextColor="#333333"/>
+                </Border>
+
+                <Border Stroke="#E0E0E0" StrokeShape="RoundRectangle 8" StrokeThickness="1" Padding="10,0">
+                    <Entry x:Name="PasswordEntry" Placeholder="Password" IsPassword="True" TextColor="#333333"/>
+                </Border>
+
+                <Border Stroke="#E0E0E0" StrokeShape="RoundRectangle 8" StrokeThickness="1" Padding="10,0">
+                    <Entry x:Name="ConfirmPasswordEntry" Placeholder="Confirm Password" IsPassword="True" TextColor="#333333"/>
+                </Border>
+            </VerticalStackLayout>
+
+            <HorizontalStackLayout Spacing="10" Margin="0,10,0,0">
+                <CheckBox x:Name="IsDriverCheckBox" Color="#00B14F" CheckedChanged="OnIsDriverChanged" />
+                <Label Text="Register as Driver" 
+                       VerticalOptions="Center" 
+                       TextColor="#333333" 
+                       FontAttributes="Bold"
+                       FontSize="13"/>
+            </HorizontalStackLayout>
+
+            <Border x:Name="DriverDetailsBorder" 
+                    Stroke="#E0E0E0" 
+                    StrokeShape="RoundRectangle 8" 
+                    StrokeThickness="1" 
+                    Padding="10,0" 
+                    IsVisible="False">
+                <Entry x:Name="LicenseEntry" Placeholder="License Number" TextColor="#333333"/>
+            </Border>
+
+            <HorizontalStackLayout Spacing="10" Margin="0,10,0,0">
+                <CheckBox Color="#00B14F" />
+                <Label Text="I agree to the Terms and Conditions" 
+                       VerticalOptions="Center" 
+                       TextColor="#666666" 
+                       FontSize="13"/>
+            </HorizontalStackLayout>
+
+            <Button Text="REGISTER"
+                    BackgroundColor="#00B14F"
+                    TextColor="White"
+                    CornerRadius="8"
+                    HeightRequest="50"
+                    FontAttributes="Bold"
+                    Margin="0,20,0,0"
+                    Clicked="OnRegisterClicked" />
+
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="5">
+                <Label Text="Already have an account?" TextColor="#666666" />
+                <Label Text="Log In" 
+                       TextColor="#00B14F" 
+                       FontAttributes="Bold">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLoginTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

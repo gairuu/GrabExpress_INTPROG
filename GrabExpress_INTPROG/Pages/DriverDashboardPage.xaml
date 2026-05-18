@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:GrabExpress_INTPROG.Models"
+             x:Class="GrabExpress_INTPROG.Pages.DriverDashboardPage"
+             Title="Driver App"
+             BackgroundColor="#F4F6F9"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Header -->
+        <Border Grid.Row="0" BackgroundColor="#00B14F" StrokeThickness="0" Padding="20,18,20,22">
+            <Grid ColumnDefinitions="*, Auto">
+                <HorizontalStackLayout Spacing="14" VerticalOptions="Center">
+                    <Border BackgroundColor="#009940" StrokeThickness="0" StrokeShape="RoundRectangle 24"
+                            WidthRequest="48" HeightRequest="48">
+                        <Label Text="🧑‍✈️" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                    <VerticalStackLayout VerticalOptions="Center">
+                        <Label Text="Driver Mode" TextColor="#C8F5D8" FontSize="12"/>
+                        <Label Text="GrabExpress" TextColor="White" FontSize="18" FontAttributes="Bold"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+                <Border Grid.Column="1" BackgroundColor="#009940" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 20" Padding="14,8" VerticalOptions="Center">
+                    <Label Text="● ONLINE" TextColor="White" FontSize="11" FontAttributes="Bold"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20,20,20,30" Spacing="14">
+
+                <Label Text="Active Requests" FontSize="17" FontAttributes="Bold" TextColor="#1A1A1A"/>
+
+                <CollectionView x:Name="JobsList" x:DataType="models:Delivery">
+                    <CollectionView.EmptyView>
+                        <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="30">
+                            <Border.Shadow>
+                                <Shadow Brush="#00000010" Offset="0,2" Radius="8" Opacity="0.1"/>
+                            </Border.Shadow>
+                            <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                                <Label Text="🎉" FontSize="40" HorizontalOptions="Center"/>
+                                <Label Text="No active requests" FontAttributes="Bold" FontSize="16"
+                                       TextColor="#1A1A1A" HorizontalOptions="Center"/>
+                                <Label Text="New jobs will appear here when customers book a delivery."
+                                       TextColor="#AAAAAA" FontSize="13" HorizontalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </CollectionView.EmptyView>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Delivery">
+                            <Border BackgroundColor="White" StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 16" Padding="18" Margin="0,0,0,12">
+                                <Border.Shadow>
+                                    <Shadow Brush="#00000012" Offset="0,3" Radius="10" Opacity="0.1"/>
+                                </Border.Shadow>
+                                <VerticalStackLayout Spacing="12">
+
+                                    <!-- Route Info -->
+                                    <HorizontalStackLayout Spacing="14">
+                                        <VerticalStackLayout Spacing="6" WidthRequest="20" VerticalOptions="Center">
+                                            <Border BackgroundColor="#00B14F" StrokeThickness="0"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    WidthRequest="12" HeightRequest="12" HorizontalOptions="Center"/>
+                                            <BoxView BackgroundColor="#DDDDDD" WidthRequest="2" HeightRequest="20" HorizontalOptions="Center"/>
+                                            <Border BackgroundColor="#e74c3c" StrokeThickness="0"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    WidthRequest="12" HeightRequest="12" HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+                                        <VerticalStackLayout Spacing="10" HorizontalOptions="FillAndExpand">
+                                            <VerticalStackLayout Spacing="2">
+                                                <Label Text="PICKUP" FontSize="10" TextColor="#AAAAAA" FontAttributes="Bold"/>
+                                                <Label Text="{Binding PickupLocation}" FontAttributes="Bold" TextColor="#1A1A1A" FontSize="14"/>
+                                            </VerticalStackLayout>
+                                            <VerticalStackLayout Spacing="2">
+                                                <Label Text="DROP-OFF" FontSize="10" TextColor="#AAAAAA" FontAttributes="Bold"/>
+                                                <Label Text="{Binding DropoffLocation}" TextColor="#555555" FontSize="14"/>
+                                            </VerticalStackLayout>
+                                        </VerticalStackLayout>
+                                    </HorizontalStackLayout>
+
+                                    <BoxView HeightRequest="1" BackgroundColor="#F0F0F0"/>
+
+                                    <!-- Status + Fee Row -->
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <Border BackgroundColor="#E8F5E9" StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 20" Padding="10,5" HorizontalOptions="Start">
+                                            <Label Text="{Binding DeliveryStatus}" TextColor="#00B14F" FontSize="12" FontAttributes="Bold"/>
+                                        </Border>
+                                        <Label Grid.Column="1" Text="{Binding DeliveryFee, StringFormat='₱{0:N2}'}"
+                                               FontAttributes="Bold" FontSize="16" TextColor="#1A1A1A" VerticalOptions="Center"/>
+                                    </Grid>
+
+                                    <!-- Accept Job Button -->
+                                    <Button Text="✅  ACCEPT JOB"
+                                            BackgroundColor="#00B14F" TextColor="White"
+                                            CornerRadius="12" HeightRequest="48" FontAttributes="Bold"
+                                            FontSize="14" IsVisible="False"
+                                            Clicked="OnAcceptJobClicked"
+                                            CommandParameter="{Binding DeliveryId}">
+                                        <Button.Triggers>
+                                            <DataTrigger TargetType="Button" Binding="{Binding DeliveryStatus}" Value="Pending">
+                                                <Setter Property="IsVisible" Value="True"/>
+                                            </DataTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+
+                                    <!-- Decline Job Button -->
+                                    <Button Text="✖  DECLINE JOB"
+                                            BackgroundColor="White" BorderColor="#e74c3c"
+                                            BorderWidth="1.5" TextColor="#e74c3c"
+                                            CornerRadius="12" HeightRequest="48" FontAttributes="Bold"
+                                            FontSize="14" IsVisible="False"
+                                            Clicked="OnDeclineJobClicked"
+                                            CommandParameter="{Binding DeliveryId}">
+                                        <Button.Triggers>
+                                            <DataTrigger TargetType="Button" Binding="{Binding DeliveryStatus}" Value="Pending">
+                                                <Setter Property="IsVisible" Value="True"/>
+                                            </DataTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+
+                                    <!-- View Active Job Button -->
+                                    <Button Text="🚗  VIEW ACTIVE JOB"
+                                            BackgroundColor="#1565C0" TextColor="White"
+                                            CornerRadius="12" HeightRequest="48" FontAttributes="Bold"
+                                            FontSize="14" IsVisible="False"
+                                            Clicked="OnViewJobClicked"
+                                            CommandParameter="{Binding DeliveryId}">
+                                        <Button.Triggers>
+                                            <DataTrigger TargetType="Button" Binding="{Binding DeliveryStatus}" Value="In Transit">
+                                                <Setter Property="IsVisible" Value="True"/>
+                                            </DataTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Logout -->
+                <Button Text="↩  LOGOUT" BackgroundColor="Transparent"
+                        BorderColor="#CCCCCC" BorderWidth="1.5"
+                        TextColor="#888888" CornerRadius="12"
+                        HeightRequest="48" FontSize="13" Margin="0,8,0,0"
+                        Clicked="OnLogoutClicked"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

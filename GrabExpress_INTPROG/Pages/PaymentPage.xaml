@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GrabExpress_INTPROG.Pages.PaymentPage"
+             Title="Payment"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+
+    <VerticalStackLayout Padding="30" Spacing="25" VerticalOptions="Center">
+        
+        <Image Source="success_check.png" HeightRequest="80" HorizontalOptions="Center" />
+        
+        <Label Text="Delivery Completed" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#333333" />
+        
+        <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
+            <Label Text="Total Amount Due" FontSize="14" TextColor="#666666" HorizontalOptions="Center" />
+            <Label x:Name="AmountLabel" Text="₱150.00" FontSize="32" FontAttributes="Bold" TextColor="#00B14F" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
+        <Label Text="Select Payment Method" FontSize="16" FontAttributes="Bold" Margin="0,10,0,0" TextColor="#333333" />
+
+        <Border Stroke="#E0E0E0" StrokeShape="RoundRectangle 8" StrokeThickness="1" Padding="15">
+            <VerticalStackLayout Spacing="15">
+                <RadioButton x:Name="CashRadio" Content="Cash" IsChecked="True" TextColor="#333333" />
+                <RadioButton x:Name="CardRadio" Content="Credit/Debit Card" TextColor="#333333" />
+                <RadioButton x:Name="WalletRadio" Content="GrabPay / E-Wallet" TextColor="#333333" />
+            </VerticalStackLayout>
+        </Border>
+
+        <Button Text="PAY NOW"
+                BackgroundColor="#00B14F"
+                TextColor="White"
+                CornerRadius="8"
+                HeightRequest="50"
+                FontAttributes="Bold"
+                Clicked="OnPayClicked" />
+
+    </VerticalStackLayout>
+</ContentPage>

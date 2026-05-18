@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GrabExpress_INTPROG.Pages.ProfilePage"
+             Title="Profile"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+    
+    <Grid RowDefinitions="Auto, *">
+        <!-- Custom Header with Back Button -->
+        <Border Grid.Row="0" BackgroundColor="#00B14F" StrokeThickness="0" Padding="15,10">
+            <HorizontalStackLayout Spacing="15" VerticalOptions="Center">
+                <Label Text="←" 
+                       TextColor="White" 
+                       FontSize="24" 
+                       FontAttributes="Bold" 
+                       VerticalOptions="Center"
+                       Padding="10,0,10,0">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBackTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Profile" TextColor="White" FontSize="20" FontAttributes="Bold" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20" Spacing="20">
+            
+            <!-- Profile Header -->
+            <VerticalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,20">
+                <Image Source="user_avatar.png" HeightRequest="100" WidthRequest="100">
+                    <Image.Clip>
+                        <EllipseGeometry Center="50,50" RadiusX="50" RadiusY="50" />
+                    </Image.Clip>
+                </Image>
+                <Label x:Name="ProfileNameLabel" Text="Gabriel A. Borces" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" />
+                <Label x:Name="ProfileEmailLabel" Text="gabriel.borces@example.com" FontSize="14" TextColor="#666666" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+
+
+            <Button Text="LOG OUT" 
+                    BackgroundColor="#FF3B30" 
+                    TextColor="White" 
+                    CornerRadius="8" 
+                    HeightRequest="50" 
+                    Margin="0,20,0,0"
+                    Clicked="OnLogoutClicked" />
+
+        </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

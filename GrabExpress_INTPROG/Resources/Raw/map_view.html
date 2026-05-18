@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grab Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { height: 100vh; width: 100vw; background: #f8f9fa; }
+        .leaflet-control-attribution { display: none; }
+        
+        .marker-pin {
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            background: #00B14F;
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -15px 0 0 -15px;
+            border: 2px solid white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .marker-pin::after {
+            content: '';
+            width: 14px;
+            height: 14px;
+            margin: 8px 0 0 8px;
+            background: #fff;
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .drop-pin { background: #EE2B2B; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        var map = L.map('map').setView([10.3157, 123.8854], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        var pickupIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div class='marker-pin'></div>",
+            iconSize: [30, 42],
+            iconAnchor: [15, 42]
+        });
+
+        var dropIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div class='marker-pin drop-pin'></div>",
+            iconSize: [30, 42],
+            iconAnchor: [15, 42]
+        });
+
+        var pickupMarker = L.marker([0,0], { icon: pickupIcon });
+        var dropoffMarker = L.marker([0,0], { icon: dropIcon });
+        var routeLine = L.polyline([], { color: '#00B14F', weight: 5, opacity: 0.8 }).addTo(map);
+
+        function setPoints(pLat, pLng, dLat, dLng) {
+            if(pLat != 0) {
+                pickupMarker.setLatLng([pLat, pLng]).addTo(map);
+            }
+            if(dLat != 0) {
+                dropoffMarker.setLatLng([dLat, dLng]).addTo(map);
+            }
+            
+            if(pLat != 0 && dLat != 0) {
+                routeLine.setLatLngs([[pLat, pLng], [dLat, dLng]]);
+                map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+            } else if (pLat != 0) {
+                map.setView([pLat, pLng], 15);
+            }
+        }
+
+        // Animation for tracking
+        var riderIcon = L.divIcon({
+            html: '<div style="background-color: #00B14F; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.3);"></div>',
+            iconSize: [22, 22],
+            iconAnchor: [11, 11]
+        });
+        var riderMarker = L.marker([0,0], { icon: riderIcon });
+
+        function updatePosition(lat, lng) {
+            riderMarker.setLatLng([lat, lng]).addTo(map);
+            map.panTo([lat, lng]);
+        }
+    </script>
+</body>
+</html>
