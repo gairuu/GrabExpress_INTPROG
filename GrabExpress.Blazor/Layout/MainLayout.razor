@@ -1,22 +1,65 @@
 @inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar d-none d-md-block">
+    <!-- Desktop Sidebar -->
+    <div class="sidebar">
         <NavMenu />
     </div>
 
     <main>
+        <!-- Mobile Navbar -->
+        <div class="mobile-header">
+            <button class="btn text-white p-0 me-3" @onclick="ToggleNavMenu">
+                <i class="bi bi-list fs-2"></i>
+            </button>
+            <span class="text-white fw-bold h5 mb-0">GrabExpress</span>
+        </div>
+
+        <div class="top-row px-4">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        </div>
+
         <article class="content">
             @Body
         </article>
     </main>
 </div>
 
+@if (isNavMenuOpen)
+{
+    <div class="mobile-nav-overlay" @onclick="ToggleNavMenu">
+        <div class="mobile-nav-sidebar" @onclick:stopPropagation="true">
+            <NavMenu />
+        </div>
+    </div>
+}
+
 <style>
-    .content {
-        padding: 0 !important;
+    .mobile-nav-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+        animation: fadeIn 0.2s ease;
     }
-    main {
-        background-color: #f8f9fa;
+    .mobile-nav-sidebar {
+        width: 280px;
+        height: 100%;
+        background-color: white;
+        animation: slideIn 0.3s ease;
     }
+    @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @@keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 </style>
+
+@code {
+    private bool isNavMenuOpen = false;
+
+    private void ToggleNavMenu()
+    {
+        isNavMenuOpen = !isNavMenuOpen;
+    }
+}

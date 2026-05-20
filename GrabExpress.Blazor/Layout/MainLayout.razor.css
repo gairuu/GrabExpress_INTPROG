@@ -6,12 +6,15 @@
 
 main {
     flex: 1;
+    background-color: #f0f2f5; /* Modern, subtle light gray background */
+    min-height: 100vh;
 }
 
 .sidebar {
     background-color: #ffffff;
     border-right: 1px solid #e0e0e0;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.03);
+    z-index: 10;
 }
 
 .top-row {
@@ -28,19 +31,32 @@ main {
         margin-left: 1.5rem;
         text-decoration: none;
         color: #666;
+        font-weight: 500;
     }
 
     .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
         color: #00b14f;
     }
 
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
-    }
+/* Mobile Header */
+.mobile-header {
+    background-color: #00b14f;
+    height: 60px;
+    display: none;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
+@media (max-width: 640.98px) {
+    .sidebar {
+        display: none;
+    }
+    .mobile-header {
+        display: flex;
+    }
+    .top-row {
+        display: none;
     }
 }
 
@@ -65,5 +81,17 @@ main {
     .top-row, article {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
+    }
+
+    /* Give centered content a shadow on desktop to make it look "premium" */
+    .content ::deep .customer-container,
+    .content ::deep .booking-container,
+    .content ::deep .auth-wrapper .auth-card {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 2rem !important;
+        margin-bottom: 2rem !important;
     }
 }
