@@ -1,4 +1,5 @@
 @page "/"
+@inject NavigationManager NavigationManager
 
 <PageTitle>GrabExpress</PageTitle>
 
@@ -8,13 +9,25 @@
             <h1 class="display-4 fw-bold text-success mb-4">Welcome to GrabExpress</h1>
             <p class="lead mb-5">Reliable delivery service for your business and personal needs.</p>
             
-            <div class="card shadow-sm p-4 mb-5 bg-light">
-                <h5 class="mb-3">Ready to get started?</h5>
-                <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-                    <a href="/login" class="btn btn-success btn-lg px-4">Login to Book</a>
-                    <a href="/register" class="btn btn-outline-success btn-lg px-4">Create Account</a>
-                </div>
-            </div>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="card shadow-sm p-4 mb-5 bg-light border-success">
+                        <h5 class="mb-3">Welcome back!</h5>
+                        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                            <a href="/dashboard" class="btn btn-success btn-lg px-4">Go to Dashboard</a>
+                        </div>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="card shadow-sm p-4 mb-5 bg-light">
+                        <h5 class="mb-3">Ready to get started?</h5>
+                        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                            <a href="/login" class="btn btn-success btn-lg px-4">Login to Book</a>
+                            <a href="/register" class="btn btn-outline-success btn-lg px-4">Create Account</a>
+                        </div>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
 
             <div class="row text-start mt-4">
                 <div class="col-md-4 mb-3">
@@ -64,3 +77,20 @@
         color: white;
     }
 </style>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthStateTask != null)
+        {
+            var authState = await AuthStateTask;
+            if (authState.User.Identity?.IsAuthenticated ?? false)
+            {
+                NavigationManager.NavigateTo("/dashboard");
+            }
+        }
+    }
+}
