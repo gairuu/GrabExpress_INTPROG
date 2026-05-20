@@ -3,141 +3,198 @@
 
 @if (customer == null)
 {
-    <p class="p-4">Loading your profile...</p>
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="spinner-border text-success" role="status"></div>
+    </div>
 }
 else
 {
-    <div class="customer-container">
-        <!-- Green Header -->
-        <div class="dashboard-header text-white p-4">
-            <div class="d-flex align-items-center mb-4">
-                <div class="avatar-circle me-3">
-                    <i class="bi bi-person-fill"></i>
-                </div>
-                <div>
-                    <div class="small fw-light">Hello 👋</div>
-                    <div class="h4 mb-0 fw-bold">@customer.Name</div>
-                </div>
-            </div>
-
-            <!-- Promo Card -->
-            <div class="promo-card p-4 rounded-4 shadow-sm position-relative">
+    <div class="customer-dashboard-wrapper">
+        <!-- Premium Gradient Header -->
+        <div class="dashboard-banner p-5 text-white shadow-sm">
+            <div class="container-fluid p-0">
                 <div class="row align-items-center">
                     <div class="col-8">
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="me-2 fs-5">🚀</span>
-                            <span class="fw-bold h5 mb-0">Express Delivery</span>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="premium-avatar shadow-sm me-3">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-uppercase small fw-bold opacity-75 mb-0">Member Dashboard</h6>
+                                <h2 class="fw-bolder mb-0">Hello, @customer.Name! 👋</h2>
+                            </div>
                         </div>
-                        <p class="small mb-3 opacity-75">Send parcels across the city in minutes!</p>
-                        <button class="btn btn-light text-success fw-bold rounded-pill px-4" @onclick='() => OnViewChanged.InvokeAsync("Booking")'>
-                            Book Now →
-                        </button>
                     </div>
                     <div class="col-4 text-end">
-                        <div class="box-icon">📦</div>
+                        <span class="badge rounded-pill bg-white text-success px-3 py-2 fw-bold">PRO ACCOUNT</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- White Body -->
-        <div class="dashboard-body bg-light p-4">
-            <h5 class="fw-bold mb-3">Our Services</h5>
-            <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 clickable-card" @onclick='() => OnViewChanged.InvokeAsync("Booking")'>
-                <div class="d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center">
-                        <div class="service-icon-bg rounded-3 me-3">
-                            <span class="fs-3">📦</span>
+        <!-- Floating Service Cards Area -->
+        <div class="container-fluid px-5 negative-margin-top">
+            <div class="row g-4">
+                <!-- Express Booking Card -->
+                <div class="col-lg-8">
+                    <div class="main-service-card shadow-lg p-5 rounded-5 border-0 position-relative overflow-hidden" @onclick='() => OnViewChanged.InvokeAsync("Booking")'>
+                        <div class="row align-items-center position-relative" style="z-index: 2;">
+                            <div class="col-md-7 text-start">
+                                <span class="badge bg-white text-success mb-3 px-3 py-2 fw-bold">POPULAR SERVICE</span>
+                                <h1 class="display-5 fw-bolder mb-3">Express Delivery</h1>
+                                <p class="lead opacity-75 mb-4">Need to send a package right now? Our riders are ready to pick up your parcel in minutes.</p>
+                                <button class="btn btn-light btn-lg px-5 rounded-pill fw-bold text-success shadow">
+                                    Book Now <i class="bi bi-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                            <div class="col-md-5 d-none d-md-block text-center">
+                                <div class="floating-box-medium">📦</div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="fw-bold">Express Delivery</div>
-                            <div class="small text-muted">Send packages instantly and track them in real-time.</div>
-                        </div>
+                        <div class="card-bg-decoration"></div>
                     </div>
-                    <i class="bi bi-arrow-right text-success fw-bold"></i>
+                </div>
+
+                <!-- Stats / Quick Info -->
+                <div class="col-lg-4">
+                    <div class="stats-card h-100 p-4 shadow-sm border-0 rounded-5 bg-white d-flex flex-column justify-content-between">
+                        <div class="mb-4">
+                            <h5 class="fw-bold text-dark mb-4">Quick Stats</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle bg-success-light text-success me-3"><i class="bi bi-box-seam"></i></div>
+                                    <span class="fw-bold">Active Jobs</span>
+                                </div>
+                                <span class="h4 mb-0 fw-bolder text-success">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle bg-primary-light text-primary me-3"><i class="bi bi-check-circle"></i></div>
+                                    <span class="fw-bold">Completed</span>
+                                </div>
+                                <span class="h4 mb-0 fw-bolder text-primary">0</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-success w-100 py-3 rounded-pill fw-bold" @onclick='() => OnViewChanged.InvokeAsync("History")'>
+                            View Full History <i class="bi bi-clock-history ms-2"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <h5 class="fw-bold mb-3">Recent Activity</h5>
-            <div class="card border-0 shadow-sm rounded-4 p-3 clickable-card" @onclick='() => OnViewChanged.InvokeAsync("History")'>
-                <div class="d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center">
-                        <div class="activity-icon-bg rounded-3 me-3">
-                            <span class="fs-3">📋</span>
-                        </div>
-                        <div>
-                            <div class="fw-bold">Delivery History</div>
-                            <div class="small text-muted">View completed & cancelled orders</div>
+            <!-- Other Services Section -->
+            <div class="mt-5 pb-5">
+                <h4 class="fw-bolder text-dark mb-4">Explore More Services</h4>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="mini-service-card shadow-sm p-4 bg-white rounded-5 text-center" @onclick='() => OnViewChanged.InvokeAsync("History")'>
+                            <div class="icon-sq-bg mb-3 mx-auto" style="background-color: #f1f1ff;"><i class="bi bi-journal-text fs-3 text-primary"></i></div>
+                            <h5 class="fw-bold">My Bookings</h5>
+                            <p class="small text-muted mb-0">Track and manage your current delivery requests.</p>
                         </div>
                     </div>
-                    <i class="bi bi-chevron-right text-muted"></i>
+                    <div class="col-md-4">
+                        <div class="mini-service-card shadow-sm p-4 bg-white rounded-5 text-center" @onclick='() => OnViewChanged.InvokeAsync("Profile")'>
+                            <div class="icon-sq-bg mb-3 mx-auto" style="background-color: #fff5f5;"><i class="bi bi-person-gear fs-3 text-danger"></i></div>
+                            <h5 class="fw-bold">Account Settings</h5>
+                            <p class="small text-muted mb-0">Update your profile, addresses, and payment methods.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mini-service-card shadow-sm p-4 bg-white rounded-5 text-center">
+                            <div class="icon-sq-bg mb-3 mx-auto" style="background-color: #fef8e7;"><i class="bi bi-headset fs-3 text-warning"></i></div>
+                            <h5 class="fw-bold">Help Center</h5>
+                            <p class="small text-muted mb-0">Have an issue? Our support team is here to help 24/7.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Bottom Profile Trigger (Floating or Fixed) -->
-        <div class="p-4 text-center">
-            <button class="btn btn-outline-secondary btn-sm" @onclick='() => OnViewChanged.InvokeAsync("Profile")'>
-                View Profile
-            </button>
         </div>
     </div>
 }
 
 <style>
-    .customer-container {
-        max-width: 500px;
-        margin: 0 auto;
+    .customer-dashboard-wrapper {
         min-height: 100vh;
-        background-color: #f8f9fa;
+        background-color: #f0f2f5;
     }
-    .dashboard-header {
-        background-color: #00b14f;
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
+    .dashboard-banner {
+        background: linear-gradient(135deg, #00b14f 0%, #00813a 100%);
+        padding-bottom: 120px !important;
     }
-    .avatar-circle {
-        width: 50px;
-        height: 50px;
-        background-color: rgba(255,255,255,0.2);
+    .premium-avatar {
+        width: 60px;
+        height: 60px;
+        background: rgba(255,255,255,0.2);
+        border: 2px solid white;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+    }
+    .negative-margin-top {
+        margin-top: -60px;
+    }
+    .main-service-card {
+        background: linear-gradient(135deg, #00b14f 0%, #009140 100%);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .main-service-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 177, 79, 0.2) !important;
+    }
+    .card-bg-decoration {
+        position: absolute;
+        bottom: -50px;
+        right: -50px;
+        width: 250px;
+        height: 250px;
+        background: white;
+        border-radius: 50%;
+        opacity: 0.1;
+        z-index: 1;
+    }
+    .floating-box-medium {
+        font-size: 8rem;
+        animation: floatDash 3s ease-in-out infinite;
+    }
+    .icon-circle {
+        width: 45px;
+        height: 45px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
+        font-size: 1.2rem;
     }
-    .promo-card {
-        background-color: #009140;
-    }
-    .box-icon {
-        font-size: 4rem;
-        opacity: 0.8;
-    }
-    .service-icon-bg {
-        background-color: #e6f7ed;
+    .icon-sq-bg {
         width: 60px;
         height: 60px;
+        border-radius: 18px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
-    .activity-icon-bg {
-        background-color: #f1f1ff;
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .clickable-card {
+    .mini-service-card {
         cursor: pointer;
-        transition: transform 0.1s;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
     }
-    .clickable-card:active {
-        transform: scale(0.98);
+    .mini-service-card:hover {
+        transform: translateY(-8px);
+        border-color: #00b14f;
+        background: #f0fdf4 !important;
     }
-    .text-success {
-        color: #00b14f !important;
+    .bg-success-light { background-color: rgba(0, 177, 79, 0.1); }
+    .bg-primary-light { background-color: rgba(13, 110, 253, 0.1); }
+
+    @@keyframes floatDash {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-15px) rotate(3deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
     }
 </style>
 
