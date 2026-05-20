@@ -1,62 +1,90 @@
 @page "/"
 @inject NavigationManager NavigationManager
 
-<PageTitle>GrabExpress</PageTitle>
+<PageTitle>GrabExpress | Fast & Reliable Delivery</PageTitle>
 
-<div class="container text-center mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h1 class="display-4 fw-bold text-success mb-4">Welcome to GrabExpress</h1>
-            <p class="lead mb-5">Reliable delivery service for your business and personal needs.</p>
-            
-            <AuthorizeView>
-                <Authorized>
-                    <div class="card shadow-sm p-4 mb-5 bg-light border-success">
-                        <h5 class="mb-3">Welcome back!</h5>
-                        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-                            <a href="/dashboard" class="btn btn-success btn-lg px-4">Go to Dashboard</a>
+<div class="hero-section">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6 text-start mb-5 mb-lg-0">
+                <span class="badge rounded-pill bg-success-light text-success px-3 py-2 mb-3 fw-bold">
+                    <i class="bi bi-lightning-charge-fill"></i> FASTEST DELIVERY IN TOWN
+                </span>
+                <h1 class="display-3 fw-bolder text-dark mb-3">Send anything,<br/><span class="text-success">Anywhere.</span></h1>
+                <p class="lead text-muted mb-5 fs-4">GrabExpress is the fastest way to send documents, parcels, and gifts across the city. Reliable, safe, and live-tracked.</p>
+                
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="d-grid gap-3 d-sm-flex">
+                            <a href="/dashboard" class="btn btn-success btn-lg px-5 py-3 rounded-pill fw-bold shadow-lg">
+                                Go to My Dashboard <i class="bi bi-arrow-right ms-2"></i>
+                            </a>
                         </div>
-                    </div>
-                </Authorized>
-                <NotAuthorized>
-                    <div class="card shadow-sm p-4 mb-5 bg-light">
-                        <h5 class="mb-3">Ready to get started?</h5>
-                        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-                            <a href="/login" class="btn btn-success btn-lg px-4">Login to Book</a>
-                            <a href="/register" class="btn btn-outline-success btn-lg px-4">Create Account</a>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="d-grid gap-3 d-sm-flex">
+                            <a href="/login" class="btn btn-success btn-lg px-5 py-3 rounded-pill fw-bold shadow-lg">
+                                Login to Book <i class="bi bi-box-arrow-in-right ms-2"></i>
+                            </a>
+                            <a href="/register" class="btn btn-outline-success btn-lg px-5 py-3 rounded-pill fw-bold">
+                                Create Account
+                            </a>
                         </div>
-                    </div>
-                </NotAuthorized>
-            </AuthorizeView>
-
-            <div class="row text-start mt-4">
-                <div class="col-md-4 mb-3">
-                    <div class="p-3 border rounded h-100 bg-white shadow-sm">
-                        <h6 class="fw-bold">Fast Delivery</h6>
-                        <p class="small text-muted">Get your items delivered within hours across the city.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="p-3 border rounded h-100 bg-white shadow-sm">
-                        <h6 class="fw-bold">Real-time Tracking</h6>
-                        <p class="small text-muted">Track your deliveries live through our web dashboard.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="p-3 border rounded h-100 bg-white shadow-sm">
-                        <h6 class="fw-bold">Secure Payments</h6>
-                        <p class="small text-muted">Hassle-free and secure payment options for every booking.</p>
-                    </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+            <div class="col-lg-6 text-center position-relative">
+                <div class="hero-image-wrapper">
+                    <div class="floating-box-large">📦</div>
+                    <div class="hero-circle-bg"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<div class="container pb-5">
+    <div class="row g-4 justify-content-center mt-4">
+        <div class="col-md-4">
+            <div class="feature-card shadow-sm">
+                <div class="icon-box bg-success-light text-success">
+                    <i class="bi bi-clock-history fs-3"></i>
+                </div>
+                <h4 class="fw-bold mt-3">Fast Delivery</h4>
+                <p class="text-muted">Need it there now? Our express service guarantees pickup within minutes and delivery in hours.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card shadow-sm">
+                <div class="icon-box bg-primary-light text-primary">
+                    <i class="bi bi-geo-alt-fill fs-3"></i>
+                </div>
+                <h4 class="fw-bold mt-3">Live Tracking</h4>
+                <p class="text-muted">Watch your parcel travel in real-time. Share your tracking link with the receiver for peace of mind.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card shadow-sm">
+                <div class="icon-box bg-warning-light text-warning">
+                    <i class="bi bi-shield-lock-fill fs-3"></i>
+                </div>
+                <h4 class="fw-bold mt-3">Secure & Safe</h4>
+                <p class="text-muted">Your items are in safe hands. Every delivery is handled by our professional and verified riders.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
-    body {
-        background-color: #f8f9fa;
+    .hero-section {
+        padding: 80px 0;
+        background: radial-gradient(circle at top right, rgba(0, 177, 79, 0.05), transparent);
     }
+    .bg-success-light { background-color: rgba(0, 177, 79, 0.1); }
+    .bg-primary-light { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-warning-light { background-color: rgba(255, 193, 7, 0.1); }
+    
+    .text-success { color: #00b14f !important; }
     .btn-success {
         background-color: #00b14f;
         border-color: #00b14f;
@@ -64,17 +92,67 @@
     .btn-success:hover {
         background-color: #009140;
         border-color: #009140;
-    }
-    .text-success {
-        color: #00b14f !important;
+        transform: translateY(-2px);
     }
     .btn-outline-success {
         color: #00b14f;
         border-color: #00b14f;
+        border-width: 2px;
     }
     .btn-outline-success:hover {
         background-color: #00b14f;
         color: white;
+    }
+
+    .hero-image-wrapper {
+        position: relative;
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .floating-box-large {
+        font-size: 10rem;
+        z-index: 2;
+        animation: float 4s ease-in-out infinite;
+    }
+    .hero-circle-bg {
+        position: absolute;
+        width: 350px;
+        height: 350px;
+        background: linear-gradient(135deg, #00b14f 0%, #009140 100%);
+        border-radius: 50%;
+        opacity: 0.1;
+        z-index: 1;
+    }
+
+    .feature-card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        height: 100%;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    }
+    .icon-box {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+    @@keyframes float {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
     }
 </style>
 
@@ -84,13 +162,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthStateTask != null)
-        {
-            var authState = await AuthStateTask;
-            if (authState.User.Identity?.IsAuthenticated ?? false)
-            {
-                NavigationManager.NavigateTo("/dashboard");
-            }
-        }
+        // Don't auto-redirect on landing page anymore, let them see the website!
+        // Just show different buttons if logged in.
     }
 }
