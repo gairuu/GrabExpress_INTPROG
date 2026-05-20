@@ -1,13 +1,12 @@
 <div class="nav-container h-100 d-flex flex-column">
-    <div class="top-row ps-4 navbar navbar-light border-bottom">
-        <div class="container-fluid p-0">
-            <a class="navbar-brand fw-bold text-success d-flex align-items-center" href="">
-                <i class="bi bi-box-seam-fill me-2"></i> GrabExpress
-            </a>
-        </div>
+    <!-- Green Header to match mobile UI -->
+    <div class="nav-header ps-4 d-flex align-items-center">
+        <a class="navbar-brand fw-bold text-white d-flex align-items-center" href="">
+            <i class="bi bi-box-seam-fill me-2"></i> GrabExpress
+        </a>
     </div>
 
-    <div class="nav-scrollable flex-grow-1 py-3" onclick="document.querySelector('.navbar-toggler')?.click()">
+    <div class="nav-scrollable flex-grow-1 py-3">
         <nav class="flex-column px-2">
             <div class="nav-item mb-1">
                 <NavLink class="nav-link rounded-3 px-3 py-2" href="" Match="NavLinkMatch.All">
@@ -24,7 +23,7 @@
                     </div>
                     <div class="mt-auto pt-4 border-top mx-2">
                         <div class="nav-item">
-                            <button class="nav-link btn btn-link w-100 text-start rounded-3 px-3 py-2 text-danger" @onclick="Logout">
+                            <button class="nav-link btn btn-link w-100 text-start rounded-3 px-3 py-2 text-danger logout-btn" @onclick="Logout">
                                 <i class="bi bi-box-arrow-right me-3"></i> Logout
                             </button>
                         </div>
@@ -43,33 +42,42 @@
 </div>
 
 <style>
+    .nav-container {
+        background-color: #ffffff;
+    }
+    .nav-header {
+        background-color: #00b14f;
+        height: 3.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
     .nav-link {
-        color: #555;
+        color: #333333 !important; /* Force dark text */
         transition: all 0.2s;
         display: flex;
         align-items: center;
         font-weight: 500;
-        border: 1px solid transparent;
+        text-decoration: none;
+        margin-bottom: 0.25rem;
     }
     .nav-link:hover {
         background-color: #f0fdf4;
-        color: #00b14f;
+        color: #00b14f !important;
     }
     .nav-link.active {
         background-color: #e6f7ed;
-        color: #00b14f;
+        color: #00b14f !important;
         font-weight: 600;
     }
-    .text-success {
-        color: #00b14f !important;
-    }
-    .text-danger:hover {
-        background-color: #fff5f5;
+    .logout-btn {
         color: #dc3545 !important;
     }
+    .logout-btn:hover {
+        background-color: #fff5f5;
+        color: #a71d2a !important;
+    }
     .navbar-brand {
+        text-decoration: none;
         font-size: 1.25rem;
-        letter-spacing: -0.5px;
     }
     i {
         font-size: 1.1rem;
