@@ -1,7 +1,66 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>GrabExpress</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container text-center mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="display-4 fw-bold text-success mb-4">Welcome to GrabExpress</h1>
+            <p class="lead mb-5">Reliable delivery service for your business and personal needs.</p>
+            
+            <div class="card shadow-sm p-4 mb-5 bg-light">
+                <h5 class="mb-3">Ready to get started?</h5>
+                <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                    <a href="/login" class="btn btn-success btn-lg px-4">Login to Book</a>
+                    <a href="/register" class="btn btn-outline-success btn-lg px-4">Create Account</a>
+                </div>
+            </div>
 
-Welcome to your new app.
+            <div class="row text-start mt-4">
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 border rounded h-100 bg-white shadow-sm">
+                        <h6 class="fw-bold">Fast Delivery</h6>
+                        <p class="small text-muted">Get your items delivered within hours across the city.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 border rounded h-100 bg-white shadow-sm">
+                        <h6 class="fw-bold">Real-time Tracking</h6>
+                        <p class="small text-muted">Track your deliveries live through our web dashboard.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 border rounded h-100 bg-white shadow-sm">
+                        <h6 class="fw-bold">Secure Payments</h6>
+                        <p class="small text-muted">Hassle-free and secure payment options for every booking.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .btn-success {
+        background-color: #00b14f;
+        border-color: #00b14f;
+    }
+    .btn-success:hover {
+        background-color: #009140;
+        border-color: #009140;
+    }
+    .text-success {
+        color: #00b14f !important;
+    }
+    .btn-outline-success {
+        color: #00b14f;
+        border-color: #00b14f;
+    }
+    .btn-outline-success:hover {
+        background-color: #00b14f;
+        color: white;
+    }
+</style>
