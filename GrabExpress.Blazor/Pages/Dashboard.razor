@@ -1,0 +1,46 @@
+@page "/dashboard"
+@attribute [Authorize]
+@inject DatabaseService DatabaseService
+@inject ILocalStorageService LocalStorage
+
+<h3>Dashboard</h3>
+
+@if (isLoading)
+{
+    <p>Loading your dashboard...</p>
+}
+else if (userRole == "Admin")
+{
+    <h4>Welcome Admin</h4>
+    <p>Admin features coming soon...</p>
+}
+else if (userRole == "Driver")
+{
+    <h4>Welcome Driver</h4>
+    <p>Driver features coming soon...</p>
+}
+else if (userRole == "Customer" || userRole == null)
+{
+    <h4>Welcome Customer</h4>
+    <p>Customer features coming soon...</p>
+}
+
+@code {
+    private bool isLoading = true;
+    private string? userRole;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uid = await LocalStorage.GetItemAsync<string>("userUid");
+        if (!string.IsNullOrEmpty(uid))
+        {
+            userRole = await DatabaseService.GetUserRoleAsync(uid);
+            // Remove outer quotes if returned by Firebase
+            if (!string.IsNullOrEmpty(userRole) && userRole.StartsWith("\"") && userRole.EndsWith("\""))
+            {
+                userRole = userRole.Substring(1, userRole.Length - 2);
+            }
+        }
+        isLoading = false;
+    }
+}
