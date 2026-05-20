@@ -1,0 +1,156 @@
+@inject DatabaseService DatabaseService
+@inject ILocalStorageService LocalStorage
+
+@if (customer == null)
+{
+    <p class="p-4">Loading your profile...</p>
+}
+else
+{
+    <div class="customer-container">
+        <!-- Green Header -->
+        <div class="dashboard-header text-white p-4">
+            <div class="d-flex align-items-center mb-4">
+                <div class="avatar-circle me-3">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div>
+                    <div class="small fw-light">Hello 👋</div>
+                    <div class="h4 mb-0 fw-bold">@customer.Name</div>
+                </div>
+            </div>
+
+            <!-- Promo Card -->
+            <div class="promo-card p-4 rounded-4 shadow-sm position-relative">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <div class="d-flex align-items-center mb-1">
+                            <span class="me-2 fs-5">🚀</span>
+                            <span class="fw-bold h5 mb-0">Express Delivery</span>
+                        </div>
+                        <p class="small mb-3 opacity-75">Send parcels across the city in minutes!</p>
+                        <button class="btn btn-light text-success fw-bold rounded-pill px-4" @onclick='() => OnViewChanged.InvokeAsync("Booking")'>
+                            Book Now →
+                        </button>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div class="box-icon">📦</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- White Body -->
+        <div class="dashboard-body bg-light p-4">
+            <h5 class="fw-bold mb-3">Our Services</h5>
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 clickable-card" @onclick='() => OnViewChanged.InvokeAsync("Booking")'>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="service-icon-bg rounded-3 me-3">
+                            <span class="fs-3">📦</span>
+                        </div>
+                        <div>
+                            <div class="fw-bold">Express Delivery</div>
+                            <div class="small text-muted">Send packages instantly and track them in real-time.</div>
+                        </div>
+                    </div>
+                    <i class="bi bi-arrow-right text-success fw-bold"></i>
+                </div>
+            </div>
+
+            <h5 class="fw-bold mb-3">Recent Activity</h5>
+            <div class="card border-0 shadow-sm rounded-4 p-3 clickable-card" @onclick='() => OnViewChanged.InvokeAsync("History")'>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="activity-icon-bg rounded-3 me-3">
+                            <span class="fs-3">📋</span>
+                        </div>
+                        <div>
+                            <div class="fw-bold">Delivery History</div>
+                            <div class="small text-muted">View completed & cancelled orders</div>
+                        </div>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Profile Trigger (Floating or Fixed) -->
+        <div class="p-4 text-center">
+            <button class="btn btn-outline-secondary btn-sm" @onclick='() => OnViewChanged.InvokeAsync("Profile")'>
+                View Profile
+            </button>
+        </div>
+    </div>
+}
+
+<style>
+    .customer-container {
+        max-width: 500px;
+        margin: 0 auto;
+        min-height: 100vh;
+        background-color: #f8f9fa;
+    }
+    .dashboard-header {
+        background-color: #00b14f;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    .avatar-circle {
+        width: 50px;
+        height: 50px;
+        background-color: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .promo-card {
+        background-color: #009140;
+    }
+    .box-icon {
+        font-size: 4rem;
+        opacity: 0.8;
+    }
+    .service-icon-bg {
+        background-color: #e6f7ed;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .activity-icon-bg {
+        background-color: #f1f1ff;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .clickable-card {
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    .clickable-card:active {
+        transform: scale(0.98);
+    }
+    .text-success {
+        color: #00b14f !important;
+    }
+</style>
+
+@code {
+    [Parameter] public EventCallback<string> OnViewChanged { get; set; }
+    private Customer? customer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uid = await LocalStorage.GetItemAsync<string>("userUid");
+        if (!string.IsNullOrEmpty(uid))
+        {
+            customer = await DatabaseService.GetUserProfileAsync(uid);
+        }
+    }
+}
