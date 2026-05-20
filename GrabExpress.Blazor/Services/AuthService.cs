@@ -50,17 +50,28 @@ namespace GrabExpress.Blazor.Services
             await _localStorage.SetItemAsync("userEmail", creds.User.Info.Email);
             await _localStorage.SetItemAsync("userUid", creds.User.Uid);
 
-            ((FirebaseAuthStateProvider)_authStateProvider).NotifyUserAuthentication(token, creds.User.Info.Email);
+            if (_authStateProvider is FirebaseAuthStateProvider provider)
+            {
+                provider.NotifyUserAuthentication(token, creds.User.Info.Email);
+            }
         }
 
         public async Task LogoutAsync()
         {
-            _authClient.SignOut();
+            try
+            {
+                _authClient.SignOut();
+            }
+            catch (Exception) { /* Ignore signout errors */ }
+
             await _localStorage.RemoveItemAsync("authToken");
             await _localStorage.RemoveItemAsync("userEmail");
             await _localStorage.RemoveItemAsync("userUid");
 
-            ((FirebaseAuthStateProvider)_authStateProvider).NotifyUserLogout();
+            if (_authStateProvider is FirebaseAuthStateProvider provider)
+            {
+                provider.NotifyUserLogout();
+            }
         }
 
         public User? GetCurrentUser()

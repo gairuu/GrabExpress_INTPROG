@@ -90,7 +90,15 @@
 
     private async Task Logout()
     {
-        await AuthService.LogoutAsync();
-        NavigationManager.NavigateTo("/");
+        try
+        {
+            await AuthService.LogoutAsync();
+            NavigationManager.NavigateTo("/", true);
+        }
+        catch 
+        {
+            await AuthService.LogoutAsync(); // Try again or just redirect
+            NavigationManager.NavigateTo("/", true);
+        }
     }
 }

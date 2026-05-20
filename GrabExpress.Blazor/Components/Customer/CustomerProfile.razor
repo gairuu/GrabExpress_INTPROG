@@ -44,7 +44,17 @@
 
     private async Task HandleLogout()
     {
-        await AuthService.LogoutAsync();
-        NavigationManager.NavigateTo("/");
+        try
+        {
+            await AuthService.LogoutAsync();
+            NavigationManager.NavigateTo("/", true); // Force reload to ensure clean state
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Logout error: {ex.Message}");
+            // Fallback: just clear storage and redirect
+            await LocalStorage.ClearAsync();
+            NavigationManager.NavigateTo("/", true);
+        }
     }
 }
