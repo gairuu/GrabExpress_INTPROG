@@ -47,8 +47,7 @@
             {
                 Name = fullName,
                 Email = email,
-                Phone = "", // Collect later
-                Role = "Customer"
+                ContactNumber = "" // Collect later
             };
             
             await DatabaseService.SaveUserProfileAsync(creds.User.Uid, customer);
