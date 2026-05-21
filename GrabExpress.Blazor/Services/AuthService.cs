@@ -10,11 +10,13 @@ namespace GrabExpress.Blazor.Services
         private readonly FirebaseAuthClient _authClient;
         private readonly ILocalStorageService _localStorage;
         private readonly AuthenticationStateProvider _authStateProvider;
+        private readonly DatabaseService _databaseService;
 
-        public AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider)
+        public AuthService(ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider, DatabaseService databaseService)
         {
             _localStorage = localStorage;
             _authStateProvider = authStateProvider;
+            _databaseService = databaseService;
 
             var config = new FirebaseAuthConfig
             {
@@ -46,13 +48,16 @@ namespace GrabExpress.Blazor.Services
         private async Task HandleLoginSuccess(UserCredential creds)
         {
             var token = await creds.User.GetIdTokenAsync();
-            await _localStorage.SetItemAsync("authToken", token);
-            await _localStorage.SetItemAsync("userEmail", creds.User.Info.Email);
-            await _localStorage.SetItemAsync("userUid", creds.User.Uid);
+            var role = await _databaseService.GetUserRoleAsync(creds.User.Uid) ?? "Customer";
+
+            await _localStorage.SetItemAsync(StorageKeys.AuthToken, token);
+            await _localStorage.SetItemAsync(StorageKeys.UserEmail, creds.User.Info.Email);
+            await _localStorage.SetItemAsync(StorageKeys.UserUid, creds.User.Uid);
+            await _localStorage.SetItemAsync(StorageKeys.UserRole, role);
 
             if (_authStateProvider is FirebaseAuthStateProvider provider)
             {
-                provider.NotifyUserAuthentication(token, creds.User.Info.Email);
+                provider.NotifyUserAuthentication(token, creds.User.Info.Email, role);
             }
         }
 
@@ -64,9 +69,10 @@ namespace GrabExpress.Blazor.Services
             }
             catch (Exception) { /* Ignore signout errors */ }
 
-            await _localStorage.RemoveItemAsync("authToken");
-            await _localStorage.RemoveItemAsync("userEmail");
-            await _localStorage.RemoveItemAsync("userUid");
+            await _localStorage.RemoveItemAsync(StorageKeys.AuthToken);
+            await _localStorage.RemoveItemAsync(StorageKeys.UserEmail);
+            await _localStorage.RemoveItemAsync(StorageKeys.UserUid);
+            await _localStorage.RemoveItemAsync(StorageKeys.UserRole);
 
             if (_authStateProvider is FirebaseAuthStateProvider provider)
             {

@@ -51,5 +51,27 @@ namespace GrabExpress.Blazor.Tests
             Assert.Equal(email, result.User.FindFirst(ClaimTypes.Email)?.Value);
             Assert.Equal(token, result.User.FindFirst("FirebaseToken")?.Value);
         }
+
+        [Fact]
+        public async Task GetAuthenticationStateAsync_WithTokenAndRole_ReturnsAuthenticatedWithRole()
+        {
+            // Arrange
+            var token = "fake-token";
+            var email = "test@example.com";
+            var role = "Admin";
+            _mockLocalStorage.Setup(x => x.GetItemAsync<string>("authToken", default))
+                .ReturnsAsync(token);
+            _mockLocalStorage.Setup(x => x.GetItemAsync<string>("userEmail", default))
+                .ReturnsAsync(email);
+            _mockLocalStorage.Setup(x => x.GetItemAsync<string>("userRole", default))
+                .ReturnsAsync(role);
+
+            // Act
+            var result = await _authStateProvider.GetAuthenticationStateAsync();
+
+            // Assert
+            Assert.True(result.User.Identity.IsAuthenticated);
+            Assert.Equal(role, result.User.FindFirst(ClaimTypes.Role)?.Value);
+        }
     }
 }

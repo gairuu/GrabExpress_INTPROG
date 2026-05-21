@@ -102,6 +102,12 @@ namespace GrabExpress.Blazor.Services
                     .Child(userId)
                     .OnceSingleAsync<string>();
                 
+                // Remove outer quotes if returned by Firebase
+                if (!string.IsNullOrEmpty(role) && role.StartsWith("\"") && role.EndsWith("\""))
+                {
+                    role = role.Substring(1, role.Length - 2);
+                }
+
                 return role; 
             }
             catch 

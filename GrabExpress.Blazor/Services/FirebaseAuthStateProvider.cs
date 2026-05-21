@@ -15,8 +15,9 @@ namespace GrabExpress.Blazor.Services
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var savedToken = await _localStorage.GetItemAsync<string>("authToken");
-            var savedEmail = await _localStorage.GetItemAsync<string>("userEmail");
+            var savedToken = await _localStorage.GetItemAsync<string>(StorageKeys.AuthToken);
+            var savedEmail = await _localStorage.GetItemAsync<string>(StorageKeys.UserEmail);
+            var savedRole = await _localStorage.GetItemAsync<string>(StorageKeys.UserRole);
 
             if (string.IsNullOrWhiteSpace(savedToken))
             {
@@ -29,19 +30,29 @@ namespace GrabExpress.Blazor.Services
                 new Claim("FirebaseToken", savedToken)
             };
 
+            if (!string.IsNullOrWhiteSpace(savedRole))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, savedRole));
+            }
+
             var identity = new ClaimsIdentity(claims, "Firebase");
             var user = new ClaimsPrincipal(identity);
 
             return new AuthenticationState(user);
         }
 
-        public void NotifyUserAuthentication(string token, string email)
+        public void NotifyUserAuthentication(string token, string email, string role = null)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, email),
                 new Claim("FirebaseToken", token)
             };
+
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var identity = new ClaimsIdentity(claims, "Firebase");
             var user = new ClaimsPrincipal(identity);
