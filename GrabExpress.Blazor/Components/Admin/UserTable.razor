@@ -1,0 +1,99 @@
+@using GrabExpress.Blazor.Models
+@typeparam TItem
+
+<div class="table-responsive rounded-3 border">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+            <tr>
+                <th class="ps-4">Name</th>
+                <th>@(typeof(TItem) == typeof(Driver) ? "Status" : "Email")</th>
+                <th>Rating</th>
+                <th class="text-end pe-4">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Items == null || !Items.Any())
+            {
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">No users found.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var item in Items)
+                {
+                    <tr>
+                        <td class="ps-4 fw-bold">@GetName(item)</td>
+                        <td>
+                            @if (typeof(TItem) == typeof(Driver))
+                            {
+                                <span class="badge @GetStatusBadgeClass(GetSecondary(item))">
+                                    @GetSecondary(item)
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">@GetSecondary(item)</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-star-fill me-1"></i> @GetRating(item)
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            @if (IsSuspended(item))
+                            {
+                                <button class="btn btn-sm btn-success px-3 rounded-pill" @onclick="() => OnAction.InvokeAsync(item)">
+                                    Reactivate
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-outline-danger px-3 rounded-pill" @onclick="() => OnAction.InvokeAsync(item)">
+                                    Suspend
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter] public IEnumerable<TItem>? Items { get; set; }
+    [Parameter] public EventCallback<TItem> OnAction { get; set; }
+
+    private string GetName(TItem item) => item switch {
+        Driver d => d.Name ?? "Unknown Driver",
+        Customer c => c.Name ?? "Unknown Customer",
+        _ => "N/A"
+    };
+
+    private string GetSecondary(TItem item) => item switch {
+        Driver d => d.Status ?? "Offline",
+        Customer c => c.Email ?? "No Email",
+        _ => "N/A"
+    };
+
+    private bool IsSuspended(TItem item) => item switch {
+        Driver d => d.IsSuspended,
+        Customer c => c.IsSuspended,
+        _ => false
+    };
+
+    private string GetStatusBadgeClass(string status) => status switch {
+        "Available" => "bg-success",
+        "Busy" => "bg-primary",
+        "Offline" => "bg-secondary",
+        _ => "bg-dark"
+    };
+
+    private string GetRating(TItem item) => item switch {
+        Driver => "4.8",
+        Customer => "5.0",
+        _ => "N/A"
+    };
+}

@@ -1,0 +1,185 @@
+@page "/admin-dashboard"
+@attribute [Authorize(Roles = "Admin")]
+@inject DatabaseService DatabaseService
+@inject NavigationManager NavigationManager
+@using GrabExpress.Blazor.Components.Admin
+
+<div class="container-fluid py-4 bg-light min-vh-100">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Admin Command Center</h2>
+            <p class="text-muted mb-0">Monitor and manage GrabExpress operations.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-white text-dark border p-2 rounded-3 shadow-sm">
+                <i class="bi bi-calendar3 me-2 text-success"></i> @DateTime.Now.ToString("dd MMM yyyy")
+            </span>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5 px-3">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-success text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="small text-uppercase fw-bold mb-1 opacity-75">Total Deliveries</p>
+                            <h2 class="fw-bold mb-0">@totalDeliveries</h2>
+                        </div>
+                        <div class="fs-1 opacity-50"><i class="bi bi-box-seam"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-primary text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="small text-uppercase fw-bold mb-1 opacity-75">Active Drivers</p>
+                            <h2 class="fw-bold mb-0">@activeDriversCount</h2>
+                        </div>
+                        <div class="fs-1 opacity-50"><i class="bi bi-person-badge"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-warning text-dark">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="small text-uppercase fw-bold mb-1 opacity-75">Pending Jobs</p>
+                            <h2 class="fw-bold mb-0">@pendingJobsCount</h2>
+                        </div>
+                        <div class="fs-1 opacity-50"><i class="bi bi-clock-history"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-danger text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="small text-uppercase fw-bold mb-1 opacity-75">Suspended Users</p>
+                            <h2 class="fw-bold mb-0">@suspendedUsersCount</h2>
+                        </div>
+                        <div class="fs-1 opacity-50"><i class="bi bi-exclamation-triangle"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Tabs -->
+    <div class="bg-white rounded-4 shadow-sm mx-3 overflow-hidden">
+        <ul class="nav nav-tabs nav-fill bg-light border-0">
+            <li class="nav-item">
+                <button class="nav-link py-3 fw-bold @(activeTab == "Drivers" ? "active border-bottom border-4 border-success text-success bg-white" : "text-muted border-0")" 
+                        @onclick='() => activeTab = "Drivers"'>
+                    <i class="bi bi-truck me-2"></i> Drivers
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link py-3 fw-bold @(activeTab == "Customers" ? "active border-bottom border-4 border-success text-success bg-white" : "text-muted border-0")" 
+                        @onclick='() => activeTab = "Customers"'>
+                    <i class="bi bi-people me-2"></i> Customers
+                </button>
+            </li>
+        </ul>
+
+        <div class="p-4">
+            @if (isLoading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-success" role="status"></div>
+                    <p class="mt-2 text-muted">Fetching data...</p>
+                </div>
+            }
+            else
+            {
+                @if (activeTab == "Drivers")
+                {
+                    <UserTable TItem="Driver" Items="drivers" OnAction="HandleDriverAction" />
+                }
+                else
+                {
+                    <UserTable TItem="Customer" Items="customers" OnAction="HandleCustomerAction" />
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .nav-tabs .nav-link.active {
+        background-color: transparent !important;
+        border-bottom: 4px solid #00b14f !important;
+        color: #00b14f !important;
+    }
+    .nav-tabs .nav-link:hover {
+        border-color: transparent;
+        background-color: #f1f3f5;
+    }
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+
+@code {
+    private string activeTab = "Drivers";
+    private bool isLoading = true;
+    private List<Driver> drivers = new();
+    private List<Customer> customers = new();
+    private List<Delivery> deliveries = new();
+
+    private int totalDeliveries => deliveries.Count;
+    private int activeDriversCount => drivers.Count(d => d.Status == "Available" || d.Status == "Busy");
+    private int pendingJobsCount => deliveries.Count(d => d.DeliveryStatus == "Pending");
+    private int suspendedUsersCount => drivers.Count(d => d.IsSuspended) + customers.Count(c => c.IsSuspended);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        drivers = await DatabaseService.GetAllDriversAsync();
+        customers = await DatabaseService.GetAllCustomersAsync();
+        deliveries = await DatabaseService.GetAllDeliveriesAsync();
+        isLoading = false;
+    }
+
+    private async Task HandleDriverAction(Driver driver)
+    {
+        if (driver.IsSuspended)
+        {
+            await DatabaseService.SaveUserRoleAsync(driver.DriverId!, "Driver");
+        }
+        else
+        {
+            await DatabaseService.DeleteDriverAsync(driver.DriverId!);
+        }
+        await LoadData();
+    }
+
+    private async Task HandleCustomerAction(Customer customer)
+    {
+        if (customer.IsSuspended)
+        {
+            await DatabaseService.SaveUserRoleAsync(customer.CustomerId!, "Customer");
+        }
+        else
+        {
+            await DatabaseService.DeleteCustomerAsync(customer.CustomerId!);
+        }
+        await LoadData();
+    }
+}
