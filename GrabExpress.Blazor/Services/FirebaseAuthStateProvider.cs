@@ -17,6 +17,7 @@ namespace GrabExpress.Blazor.Services
         {
             var savedToken = await _localStorage.GetItemAsync<string>(StorageKeys.AuthToken);
             var savedEmail = await _localStorage.GetItemAsync<string>(StorageKeys.UserEmail);
+            var savedUid = await _localStorage.GetItemAsync<string>(StorageKeys.UserUid);
             var savedRole = await _localStorage.GetItemAsync<string>(StorageKeys.UserRole);
 
             if (string.IsNullOrWhiteSpace(savedToken))
@@ -27,6 +28,7 @@ namespace GrabExpress.Blazor.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, savedEmail ?? "user@example.com"),
+                new Claim(ClaimTypes.NameIdentifier, savedUid ?? ""),
                 new Claim("FirebaseToken", savedToken)
             };
 
@@ -41,11 +43,12 @@ namespace GrabExpress.Blazor.Services
             return new AuthenticationState(user);
         }
 
-        public void NotifyUserAuthentication(string token, string email, string role = null)
+        public void NotifyUserAuthentication(string token, string email, string uid, string role = null)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.NameIdentifier, uid),
                 new Claim("FirebaseToken", token)
             };
 

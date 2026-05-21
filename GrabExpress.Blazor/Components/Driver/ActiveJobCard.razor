@@ -1,0 +1,148 @@
+@using GrabExpress.Blazor.Models
+@using GrabExpress.Blazor.Services
+@inject DatabaseService DbService
+
+<div class="card shadow-sm mb-4 border-0" style="border-radius: 12px; overflow: hidden;">
+    <div class="card-header bg-white border-0 pt-4 px-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">Active Job</h5>
+            <span class="badge @GetStatusBadgeClass()">@Job.DeliveryStatus</span>
+        </div>
+    </div>
+    <div class="card-body px-4 pb-4">
+        <div class="delivery-route-visual my-4">
+            <div class="route-point pickup">
+                <div class="dot green"></div>
+                <div class="info">
+                    <div class="label">PICKUP</div>
+                    <div class="address text-truncate">@Job.PickupLocation</div>
+                </div>
+            </div>
+            <div class="route-line"></div>
+            <div class="route-point dropoff">
+                <div class="dot red"></div>
+                <div class="info">
+                    <div class="label">DROPOFF</div>
+                    <div class="address text-truncate">@Job.DropoffLocation</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded-3">
+            <div>
+                <div class="small text-muted mb-1">Estimated Earnings</div>
+                <div class="h4 mb-0 fw-bold text-grab">₱@Job.DeliveryFee.ToString("N2")</div>
+            </div>
+            <div class="text-end">
+                <div class="small text-muted mb-1">Booking Time</div>
+                <div class="small fw-semibold">@Job.BookingTime.ToLocalTime().ToString("t")</div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            @if (Job.DeliveryStatus == "Pending")
+            {
+                <button class="btn btn-grab py-3 fw-bold" @onclick="HandleAccept">Accept Job</button>
+            }
+            else if (Job.DeliveryStatus == "Assigned")
+            {
+                <button class="btn btn-grab py-3 fw-bold" @onclick="HandlePickUp">Confirm Pick Up</button>
+            }
+            else if (Job.DeliveryStatus == "In Transit")
+            {
+                <button class="btn btn-grab py-3 fw-bold" @onclick="HandleDeliver">Mark as Delivered</button>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-grab { color: #00b14f; }
+    .btn-grab { 
+        background-color: #00b14f; 
+        color: white; 
+        border: none;
+    }
+    .btn-grab:hover {
+        background-color: #009241;
+        color: white;
+    }
+    .badge-pending { background-color: #fff3cd; color: #856404; }
+    .badge-assigned { background-color: #cfe2ff; color: #084298; }
+    .badge-intransit { background-color: #d1e7dd; color: #0f5132; }
+
+    .delivery-route-visual {
+        position: relative;
+        padding-left: 10px;
+    }
+    .route-point {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: relative;
+        z-index: 2;
+    }
+    .route-point .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .dot.green { background-color: #00b14f; box-shadow: 0 0 0 4px rgba(0, 177, 79, 0.2); }
+    .dot.red { background-color: #ee2737; box-shadow: 0 0 0 4px rgba(238, 39, 55, 0.2); }
+    
+    .route-line {
+        position: absolute;
+        left: 6px;
+        top: 20px;
+        bottom: 20px;
+        width: 2px;
+        background: repeating-linear-gradient(to bottom, #ddd, #ddd 5px, transparent 5px, transparent 10px);
+        z-index: 1;
+    }
+    .route-point .label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        color: #999;
+    }
+    .route-point .address {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #333;
+    }
+    .route-point.pickup { margin-bottom: 30px; }
+</style>
+
+@code {
+    [Parameter] public Delivery Job { get; set; } = new();
+    [Parameter] public EventCallback OnStatusChanged { get; set; }
+
+    private string GetStatusBadgeClass() => Job.DeliveryStatus switch
+    {
+        "Pending" => "badge-pending",
+        "Assigned" => "badge-assigned",
+        "In Transit" => "badge-intransit",
+        _ => "bg-secondary text-white"
+    };
+
+    private async Task HandleAccept()
+    {
+        await DbService.UpdateDeliveryStatusAsync(Job.DeliveryId!, "Assigned");
+        await DbService.UpdateDriverStatusAsync(Job.DriverId!, "Busy");
+        await OnStatusChanged.InvokeAsync();
+    }
+
+    private async Task HandlePickUp()
+    {
+        await DbService.UpdateDeliveryStatusAsync(Job.DeliveryId!, "In Transit");
+        await OnStatusChanged.InvokeAsync();
+    }
+
+    private async Task HandleDeliver()
+    {
+        await DbService.UpdateDeliveryStatusAsync(Job.DeliveryId!, "Completed");
+        await DbService.UpdateDriverStatusAsync(Job.DriverId!, "Available");
+        await OnStatusChanged.InvokeAsync();
+    }
+}

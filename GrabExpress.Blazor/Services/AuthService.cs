@@ -57,7 +57,7 @@ namespace GrabExpress.Blazor.Services
 
             if (_authStateProvider is FirebaseAuthStateProvider provider)
             {
-                provider.NotifyUserAuthentication(token, creds.User.Info.Email, role);
+                provider.NotifyUserAuthentication(token, creds.User.Info.Email, creds.User.Uid, role);
             }
         }
 

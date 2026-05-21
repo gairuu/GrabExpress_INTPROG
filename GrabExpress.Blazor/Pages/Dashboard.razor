@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @inject DatabaseService DatabaseService
 @inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
 
 @if (isLoading)
 {
@@ -17,13 +18,6 @@ else if (userRole == "Admin")
     <div class="container p-4">
         <h3 class="fw-bold">Admin Dashboard</h3>
         <div class="alert alert-info">Admin features are coming soon...</div>
-    </div>
-}
-else if (userRole == "Driver")
-{
-    <div class="container p-4">
-        <h3 class="fw-bold text-success">Driver Dashboard</h3>
-        <div class="alert alert-info">Driver features are coming soon...</div>
     </div>
 }
 else if (userRole == "Customer" || userRole == null)
@@ -57,6 +51,12 @@ else if (userRole == "Customer" || userRole == null)
         if (!string.IsNullOrEmpty(uid))
         {
             userRole = await DatabaseService.GetUserRoleAsync(uid);
+
+            if (userRole == "Driver")
+            {
+                NavigationManager.NavigateTo("/driver-dashboard");
+                return;
+            }
         }
         isLoading = false;
     }
