@@ -37,9 +37,27 @@ public partial class ProfilePage : ContentPage
         }
     }
 
+    private bool _isNavigating = false;
+
     private async void OnBackTapped(object sender, EventArgs e)
     {
+        if (_isNavigating) return;
+        _isNavigating = true;
+
         await Shell.Current.GoToAsync("..");
+    }
+
+    protected override bool OnBackButtonPressed()
+    {
+        if (!_isNavigating)
+        {
+            _isNavigating = true;
+            Dispatcher.Dispatch(async () =>
+            {
+                await Shell.Current.GoToAsync("..");
+            });
+        }
+        return true;
     }
 
     private async void OnEditProfileTapped(object sender, EventArgs e)
