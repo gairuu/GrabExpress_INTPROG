@@ -12,12 +12,19 @@ public partial class ProfilePage : ContentPage
 		InitializeComponent();
         _authService = authService;
         _databaseService = databaseService;
-
-        LoadUserProfile();
 	}
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        LoadUserProfile();
+    }
 
     private async void LoadUserProfile()
     {
+        ProfileNameLabel.Text = "Loading...";
+        ProfileEmailLabel.Text = "";
+
         var currentUser = _authService.GetCurrentUser();
         if (currentUser != null)
         {

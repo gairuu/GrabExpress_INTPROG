@@ -47,8 +47,15 @@ namespace GrabExpress.Blazor.Services
 
         private async Task HandleLoginSuccess(UserCredential creds)
         {
-            var token = await creds.User.GetIdTokenAsync();
             var role = await _databaseService.GetUserRoleAsync(creds.User.Uid) ?? "Customer";
+
+            if (role == "Suspended")
+            {
+                try { _authClient.SignOut(); } catch { }
+                throw new Exception("Your account has been suspended. Please contact support.");
+            }
+
+            var token = await creds.User.GetIdTokenAsync();
 
             await _localStorage.SetItemAsync(StorageKeys.AuthToken, token);
             await _localStorage.SetItemAsync(StorageKeys.UserEmail, creds.User.Info.Email);

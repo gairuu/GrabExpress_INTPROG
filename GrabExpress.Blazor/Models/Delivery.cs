@@ -12,5 +12,6 @@ namespace GrabExpress.Blazor.Models
         public DateTime BookingTime { get; set; } = DateTime.UtcNow;
         public string? DeliveryStatus { get; set; } // Pending, In Transit, Delivered, Cancelled
         public decimal DeliveryFee { get; set; }
+        public object? DeclinedDrivers { get; set; }
     }
 }

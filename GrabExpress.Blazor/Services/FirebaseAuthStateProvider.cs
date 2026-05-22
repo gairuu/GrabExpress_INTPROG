@@ -43,7 +43,7 @@ namespace GrabExpress.Blazor.Services
             return new AuthenticationState(user);
         }
 
-        public void NotifyUserAuthentication(string token, string email, string uid, string role = null)
+        public void NotifyUserAuthentication(string token, string email, string uid, string? role = null)
         {
             var claims = new List<Claim>
             {

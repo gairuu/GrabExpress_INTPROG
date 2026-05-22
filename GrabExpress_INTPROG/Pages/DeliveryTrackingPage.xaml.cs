@@ -35,7 +35,7 @@ public partial class DeliveryTrackingPage : ContentPage
         var currentUser = _authService.GetCurrentUser();
         if (currentUser != null)
         {
-            string role = await _databaseService.GetUserRoleAsync(currentUser.Uid);
+            string? role = await _databaseService.GetUserRoleAsync(currentUser.Uid);
             _isDriverView = (role == "Driver");
         }
         else
@@ -112,9 +112,32 @@ public partial class DeliveryTrackingPage : ContentPage
 
         UpdateStatusBadge(status);
 
-        CompleteButton.IsVisible = _isDriverView && status == "In Transit";
-        PayButton.IsVisible      = !_isDriverView && status == "Delivered";
-        CancelButton.IsVisible   = status != "Delivered" && status != "Cancelled" && status != "Completed";
+        if (_isDriverView)
+        {
+            if (status == "In Transit")
+            {
+                CompleteButton.Text = "💳  REQUEST PAYMENT";
+                CompleteButton.IsVisible = true;
+                CompleteButton.BackgroundColor = Color.FromArgb("#F57F17");
+            }
+            else if (status == "Paid")
+            {
+                CompleteButton.Text = "✅  MARK AS DELIVERED";
+                CompleteButton.IsVisible = true;
+                CompleteButton.BackgroundColor = Color.FromArgb("#00B14F");
+            }
+            else
+            {
+                CompleteButton.IsVisible = false;
+            }
+        }
+        else
+        {
+            CompleteButton.IsVisible = false;
+        }
+
+        PayButton.IsVisible      = !_isDriverView && status == "Payment Pending";
+        CancelButton.IsVisible   = status != "Payment Pending" && status != "Paid" && status != "Delivered" && status != "Cancelled" && status != "Completed";
 
         if (!_isDriverView)
         {
@@ -157,17 +180,17 @@ public partial class DeliveryTrackingPage : ContentPage
         RouteDropoffLabel.Text = delivery.DropoffLocation ?? "—";
 
         // Terminal states
-        if (status == "Delivered" || status == "Cancelled")
+        if (status == "Completed" || status == "Cancelled")
         {
             StopListening();
         }
 
         // Handle navigation for customer
-        if (!_isDriverView && status == "Delivered" && !_hasNavigatedToPayment)
+        if (!_isDriverView && status == "Payment Pending" && !_hasNavigatedToPayment)
         {
             _hasNavigatedToPayment = true;
             StopListening();
-            await DisplayAlert("📦 Delivered!", "Your package has arrived! Proceeding to payment.", "OK");
+            await DisplayAlert("💳 Payment Required", "Your package has arrived! Proceeding to payment.", "OK");
             await Shell.Current.GoToAsync($"{nameof(PaymentPage)}?deliveryId={_deliveryId}");
         }
     }
@@ -187,6 +210,16 @@ public partial class DeliveryTrackingPage : ContentPage
                 StatusLabel.Text = "🚗  IN TRANSIT";
                 StatusBadge.BackgroundColor = Color.FromArgb("#E8F5E9");
                 StatusLabel.TextColor = Color.FromArgb("#00B14F");
+                break;
+            case "Payment Pending":
+                StatusLabel.Text = "💳  PAYMENT PENDING";
+                StatusBadge.BackgroundColor = Color.FromArgb("#FFF8E1");
+                StatusLabel.TextColor = Color.FromArgb("#F57F17");
+                break;
+            case "Paid":
+                StatusLabel.Text = "✅  PAID";
+                StatusBadge.BackgroundColor = Color.FromArgb("#E3F2FD");
+                StatusLabel.TextColor = Color.FromArgb("#1565C0");
                 break;
             case "Delivered":
                 StatusLabel.Text = "✅  DELIVERED";
@@ -215,7 +248,7 @@ public partial class DeliveryTrackingPage : ContentPage
     {
         Step1Badge.BackgroundColor = Color.FromArgb("#00B14F");
 
-        bool driverAssigned = status == "In Transit" || status == "Delivered" || status == "Completed";
+        bool driverAssigned = status == "Assigned" || status == "In Transit" || status == "Payment Pending" || status == "Paid" || status == "Delivered" || status == "Completed";
         bool delivered      = status == "Delivered" || status == "Completed";
 
         Step2Badge.BackgroundColor = Color.FromArgb(driverAssigned ? "#00B14F" : "#E0E0E0");
@@ -248,14 +281,35 @@ public partial class DeliveryTrackingPage : ContentPage
     private async void OnCompleteClicked(object sender, EventArgs e)
     {
         CompleteButton.IsEnabled = false; // Prevent double-tap
-        await _databaseService.UpdateDeliveryStatusAsync(_deliveryId, "Delivered");
-        
-        // Let the realtime listener handle navigation to payment if customer,
-        // but driver should go back to dashboard.
-        if (_isDriverView)
+        try
         {
-            await DisplayAlert("Success", "Delivery marked as Completed!", "OK");
-            await Shell.Current.GoToAsync("///DriverDashboardPage");
+            var delivery = await _databaseService.GetDeliveryAsync(_deliveryId);
+            if (delivery == null) return;
+
+            if (delivery.DeliveryStatus == "In Transit")
+            {
+                await _databaseService.UpdateDeliveryStatusAsync(_deliveryId, "Payment Pending");
+            }
+            else if (delivery.DeliveryStatus == "Paid")
+            {
+                await _databaseService.UpdateDeliveryStatusAsync(_deliveryId, "Completed");
+                var currentUser = _authService.GetCurrentUser();
+                if (currentUser != null)
+                {
+                    await _databaseService.UpdateDriverStatusAsync(currentUser.Uid, "Available");
+                }
+                
+                if (_isDriverView)
+                {
+                    await DisplayAlert("Success", "Delivery marked as Completed!", "OK");
+                    await Shell.Current.GoToAsync("///DriverDashboardPage");
+                }
+            }
+        }
+        catch { }
+        finally
+        {
+            CompleteButton.IsEnabled = true;
         }
     }
 

@@ -54,15 +54,8 @@ public partial class PaymentPage : ContentPage
 
             await _databaseService.RecordPaymentAsync(payment);
 
-            // Release driver back to Available
-            var delivery = await _databaseService.GetDeliveryAsync(DeliveryId);
-            if (delivery != null && !string.IsNullOrEmpty(delivery.DriverId))
-            {
-                await _databaseService.UpdateDriverStatusAsync(delivery.DriverId, "Available");
-            }
-
-            // Mark delivery as Completed so it no longer appears as "active"
-            await _databaseService.UpdateDeliveryStatusAsync(DeliveryId, "Completed");
+            // Mark delivery as Paid, driver will handle final hand-over
+            await _databaseService.UpdateDeliveryStatusAsync(DeliveryId, "Paid");
 
             await DisplayAlert("Payment Successful", "Thank you for using GrabExpress!", "OK");
             

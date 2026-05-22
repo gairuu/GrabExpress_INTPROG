@@ -38,15 +38,11 @@
                             <Entry x:Name="PickupEntry" Placeholder="Where to pick up from?"
                                    TextColor="#1A1A1A" PlaceholderColor="#BBBBBB" TextChanged="OnLocationTextChanged"/>
                         </Border>
-                        <CollectionView x:Name="PickupSuggestions" IsVisible="False" HeightRequest="120" Margin="0,0,0,4" x:DataType="x:String">
+                        <CollectionView x:Name="PickupSuggestions" IsVisible="False" HeightRequest="120" Margin="0,0,0,4" SelectionMode="Single" SelectionChanged="OnPickupSelectionChanged">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="x:String">
                                     <Border BackgroundColor="#F9F9F9" StrokeThickness="0" Padding="14,10" Margin="0,1">
-                                        <Label Text="{Binding .}" TextColor="#333333" FontSize="14">
-                                            <Label.GestureRecognizers>
-                                                <TapGestureRecognizer Tapped="OnSuggestionTapped" CommandParameter="{Binding .}"/>
-                                            </Label.GestureRecognizers>
-                                        </Label>
+                                        <Label Text="{Binding .}" TextColor="#333333" FontSize="14"/>
                                     </Border>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
@@ -64,15 +60,11 @@
                             <Entry x:Name="DropoffEntry" Placeholder="Where to deliver to?"
                                    TextColor="#1A1A1A" PlaceholderColor="#BBBBBB" TextChanged="OnLocationTextChanged"/>
                         </Border>
-                        <CollectionView x:Name="DropoffSuggestions" IsVisible="False" HeightRequest="120" Margin="0,4,0,0" x:DataType="x:String">
+                        <CollectionView x:Name="DropoffSuggestions" IsVisible="False" HeightRequest="120" Margin="0,4,0,0" SelectionMode="Single" SelectionChanged="OnDropoffSelectionChanged">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="x:String">
                                     <Border BackgroundColor="#F9F9F9" StrokeThickness="0" Padding="14,10" Margin="0,1">
-                                        <Label Text="{Binding .}" TextColor="#333333" FontSize="14">
-                                            <Label.GestureRecognizers>
-                                                <TapGestureRecognizer Tapped="OnSuggestionTapped" CommandParameter="{Binding .}"/>
-                                            </Label.GestureRecognizers>
-                                        </Label>
+                                        <Label Text="{Binding .}" TextColor="#333333" FontSize="14"/>
                                     </Border>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>

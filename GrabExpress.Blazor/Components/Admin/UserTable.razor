@@ -7,7 +7,10 @@
             <tr>
                 <th class="ps-4">Name</th>
                 <th>@(typeof(TItem) == typeof(Driver) ? "Status" : "Email")</th>
-                <th>Rating</th>
+                @if (typeof(TItem) == typeof(Driver))
+                {
+                    <th>Rating</th>
+                }
                 <th class="text-end pe-4">Actions</th>
             </tr>
         </thead>
@@ -36,11 +39,14 @@
                                 <span class="text-muted">@GetSecondary(item)</span>
                             }
                         </td>
-                        <td>
-                            <span class="badge bg-warning text-dark">
-                                <i class="bi bi-star-fill me-1"></i> @GetRating(item)
-                            </span>
-                        </td>
+                        @if (typeof(TItem) == typeof(Driver))
+                        {
+                            <td>
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-star-fill me-1"></i> @GetRating(item)
+                                </span>
+                            </td>
+                        }
                         <td class="text-end pe-4">
                             @if (IsSuspended(item))
                             {

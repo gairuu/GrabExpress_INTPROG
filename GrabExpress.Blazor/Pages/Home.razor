@@ -24,7 +24,7 @@
                     <NotAuthorized>
                         <div class="d-grid gap-3 d-sm-flex">
                             <a href="/login" class="btn btn-success btn-lg px-5 py-3 rounded-pill fw-bold shadow-lg">
-                                Login to Book <i class="bi bi-box-arrow-in-right ms-2"></i>
+                                Login <i class="bi bi-box-arrow-in-right ms-2"></i>
                             </a>
                             <a href="/register" class="btn btn-outline-success btn-lg px-5 py-3 rounded-pill fw-bold">
                                 Create Account
@@ -160,7 +160,7 @@
     [CascadingParameter]
     private Task<AuthenticationState>? AuthStateTask { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         // Don't auto-redirect on landing page anymore, let them see the website!
         // Just show different buttons if logged in.

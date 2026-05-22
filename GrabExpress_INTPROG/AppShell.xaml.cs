@@ -6,11 +6,8 @@ namespace GrabExpress_INTPROG
         {
             InitializeComponent();
 
-            Routing.RegisterRoute(nameof(Pages.LoginPage), typeof(Pages.LoginPage));
             Routing.RegisterRoute(nameof(Pages.RegisterPage), typeof(Pages.RegisterPage));
             Routing.RegisterRoute(nameof(Pages.ForgotPasswordPage), typeof(Pages.ForgotPasswordPage));
-            Routing.RegisterRoute(nameof(Pages.LandingPage), typeof(Pages.LandingPage));
-            Routing.RegisterRoute(nameof(Pages.DashboardPage), typeof(Pages.DashboardPage));
             Routing.RegisterRoute(nameof(Pages.ProfilePage), typeof(Pages.ProfilePage));
             Routing.RegisterRoute(nameof(Pages.SettingsPage), typeof(Pages.SettingsPage));
             Routing.RegisterRoute(nameof(Pages.ContactUsPage), typeof(Pages.ContactUsPage));
@@ -19,7 +16,6 @@ namespace GrabExpress_INTPROG
             Routing.RegisterRoute("TrackingPage", typeof(Pages.DeliveryTrackingPage));
             Routing.RegisterRoute(nameof(Pages.PaymentPage), typeof(Pages.PaymentPage));
             Routing.RegisterRoute(nameof(Pages.DeliveryHistoryPage), typeof(Pages.DeliveryHistoryPage));
-
             // Start with all role tabs hidden on launch
             SetRoleTabs("");
         }

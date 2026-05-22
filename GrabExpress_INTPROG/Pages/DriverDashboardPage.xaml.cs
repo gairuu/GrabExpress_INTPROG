@@ -25,17 +25,23 @@ public partial class DriverDashboardPage : ContentPage
         var currentUser = _authService.GetCurrentUser();
         if (currentUser != null)
         {
-            // For the demo, show ALL pending deliveries so any driver can accept them, 
-            // plus any deliveries already assigned to this specific driver.
             var allDeliveries = await _databaseService.GetAllDeliveriesAsync();
+
+            // Auto-fix: If driver is stuck in "Busy" but has no active jobs, reset them to "Available"
+            var myActiveJobs = allDeliveries.Where(d => d.DriverId == currentUser.Uid && (d.DeliveryStatus == "In Transit" || d.DeliveryStatus == "Assigned" || d.DeliveryStatus == "Payment Pending" || d.DeliveryStatus == "Paid")).ToList();
             
+            if (!myActiveJobs.Any())
+            {
+                await _databaseService.UpdateDriverStatusAsync(currentUser.Uid, "Available");
+            }
+
             var availableJobs = allDeliveries.Where(d => 
-                d.DeliveryStatus == "Pending" || 
-                (d.DriverId == currentUser.Uid && d.DeliveryStatus == "In Transit")
+                (d.DeliveryStatus == "Pending" && (d.DeclinedDrivers == null || !d.DeclinedDrivers.ContainsKey(currentUser.Uid))) || 
+                (d.DriverId == currentUser.Uid && (d.DeliveryStatus == "In Transit" || d.DeliveryStatus == "Assigned" || d.DeliveryStatus == "Payment Pending" || d.DeliveryStatus == "Paid"))
             ).ToList();
 
             JobsList.ItemsSource = availableJobs
-                .OrderByDescending(j => j.DeliveryStatus == "In Transit") // Active ones first
+                .OrderByDescending(j => j.DeliveryStatus == "In Transit" || j.DeliveryStatus == "Assigned" || j.DeliveryStatus == "Payment Pending" || j.DeliveryStatus == "Paid") // Active ones first
                 .ThenByDescending(j => j.BookingTime) // Newest pending ones next
                 .ToList();
         }
@@ -53,9 +59,11 @@ public partial class DriverDashboardPage : ContentPage
             var currentUser = _authService.GetCurrentUser();
             if (currentUser == null) return;
 
-            // Enforce Rule 4 & 5: Only available drivers can accept and driver can only handle one job
-            var driver = await _databaseService.GetDriverAsync(currentUser.Uid);
-            if (driver != null && driver.Status != "Available")
+            // Smarter check: See if they ACTUALLY have an active job in the database
+            var allDeliveries = await _databaseService.GetAllDeliveriesAsync();
+            bool hasActiveJob = allDeliveries.Any(d => d.DriverId == currentUser.Uid && (d.DeliveryStatus == "In Transit" || d.DeliveryStatus == "Assigned" || d.DeliveryStatus == "Payment Pending" || d.DeliveryStatus == "Paid"));
+
+            if (hasActiveJob)
             {
                 await DisplayAlert("Unavailable", "You cannot accept new jobs because you are currently handling another active delivery!", "OK");
                 return;
@@ -89,19 +97,29 @@ public partial class DriverDashboardPage : ContentPage
         var button = (Button)sender;
         string deliveryId = (string)button.CommandParameter;
 
+        if (string.IsNullOrEmpty(deliveryId)) return;
+
         bool confirm = await DisplayAlert("Decline Job", "Are you sure you want to decline this job? It will remain available for other drivers.", "Yes, Decline", "No");
         if (!confirm) return;
 
-        // Remove from local list so the driver doesn't see it again this session.
-        // The delivery stays Pending in the database for other drivers to pick up.
-        var current = JobsList.ItemsSource as IEnumerable<GrabExpress_INTPROG.Models.Delivery>;
-        if (current != null)
+        try
         {
-            var updated = current.Where(d => d.DeliveryId != deliveryId).ToList();
-            JobsList.ItemsSource = updated;
+            var currentUser = _authService.GetCurrentUser();
+            if (currentUser != null)
+            {
+                await _databaseService.DeclineDeliveryAsync(deliveryId, currentUser.Uid);
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Error", $"Could not decline job: {ex.Message}", "OK");
+            return;
         }
 
-        await DisplayAlert("Job Declined", "You have declined this delivery request.", "OK");
+        // Refresh the list immediately
+        await LoadJobs();
+
+        await DisplayAlert("Job Declined", "You have declined this delivery request. It will no longer show up for you.", "OK");
     }
 
     private async void OnLogoutClicked(object sender, EventArgs e)

@@ -16,25 +16,59 @@
             <div class="alert alert-danger py-2 small">@errorMessage</div>
         }
 
+        <!-- Role Toggle -->
+        <div class="role-toggle mb-4">
+            <button class="role-btn @(selectedRole == "Customer" ? "active" : "")"
+                    @onclick='() => selectedRole = "Customer"'>
+                <span class="role-icon">📦</span>
+                <span>I'm a Customer</span>
+            </button>
+            <button class="role-btn @(selectedRole == "Driver" ? "active" : "")"
+                    @onclick='() => selectedRole = "Driver"'>
+                <span class="role-icon">🚗</span>
+                <span>I'm a Driver</span>
+            </button>
+        </div>
+
         <div class="form-group mb-3">
             <label class="form-label small fw-bold text-muted text-uppercase mb-1">Full Name</label>
-            <input type="text" class="form-control p-3 bg-light border-0 rounded-3" 
+            <input type="text" class="form-control p-3 bg-light border-0 rounded-3"
                    placeholder="John Doe" @bind="fullName" />
         </div>
 
         <div class="form-group mb-3">
             <label class="form-label small fw-bold text-muted text-uppercase mb-1">Email Address</label>
-            <input type="email" class="form-control p-3 bg-light border-0 rounded-3" 
+            <input type="email" class="form-control p-3 bg-light border-0 rounded-3"
                    placeholder="you@example.com" @bind="email" />
         </div>
 
-        <div class="form-group mb-4">
+        <div class="form-group mb-3">
             <label class="form-label small fw-bold text-muted text-uppercase mb-1">Password</label>
-            <input type="password" class="form-control p-3 bg-light border-0 rounded-3" 
+            <input type="password" class="form-control p-3 bg-light border-0 rounded-3"
                    placeholder="••••••••" @bind="password" />
         </div>
 
-        <button class="btn btn-success w-100 p-3 rounded-3 fw-bold d-flex align-items-center justify-content-center" @onclick="HandleRegister" disabled="@isProcessing">
+        @if (selectedRole == "Driver")
+        {
+            <div class="driver-fields-banner mb-3 p-3 rounded-3">
+                <div class="small fw-bold text-success mb-2">🚗 Driver Details</div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase mb-1">Contact Number</label>
+                    <input type="tel" class="form-control p-3 bg-light border-0 rounded-3"
+                           placeholder="09XX XXX XXXX" @bind="contactNumber" />
+                </div>
+
+                <div class="form-group mb-0">
+                    <label class="form-label small fw-bold text-muted text-uppercase mb-1">License Number</label>
+                    <input type="text" class="form-control p-3 bg-light border-0 rounded-3"
+                           placeholder="e.g. N01-23-456789" @bind="licenseNumber" />
+                </div>
+            </div>
+        }
+
+        <button class="btn btn-success w-100 p-3 rounded-3 fw-bold d-flex align-items-center justify-content-center mt-2"
+                @onclick="HandleRegister" disabled="@isProcessing">
             @if (isProcessing)
             {
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -59,32 +93,53 @@
     }
     .auth-card {
         width: 100%;
-        max-width: 450px;
+        max-width: 460px;
         border: 1px solid #eee;
+    }
+    .role-toggle {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .role-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 14px 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        background: #fafafa;
+        color: #666;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .role-btn .role-icon { font-size: 1.5rem; }
+    .role-btn:hover { border-color: #00b14f; color: #00b14f; background: #f0faf5; }
+    .role-btn.active { border-color: #00b14f; background: #e6f7ed; color: #00b14f; }
+    .driver-fields-banner {
+        background: #f0faf5;
+        border: 1px solid #c3e6cb;
     }
     .form-control:focus {
         background-color: #fff !important;
         box-shadow: 0 0 0 0.25rem rgba(0, 177, 79, 0.1);
         border: 1px solid #00b14f !important;
     }
-    .btn-success {
-        background-color: #00b14f;
-        border-color: #00b14f;
-        font-size: 1.1rem;
-    }
-    .btn-success:hover {
-        background-color: #009140;
-        border-color: #009140;
-    }
-    .text-success {
-        color: #00b14f !important;
-    }
+    .btn-success { background-color: #00b14f; border-color: #00b14f; font-size: 1.1rem; }
+    .btn-success:hover { background-color: #009140; border-color: #009140; }
+    .text-success { color: #00b14f !important; }
 </style>
 
 @code {
     private string email = "";
     private string password = "";
     private string fullName = "";
+    private string contactNumber = "";
+    private string licenseNumber = "";
+    private string selectedRole = "Customer";
     private string errorMessage = "";
     private bool isProcessing = false;
 
@@ -92,23 +147,51 @@
     {
         if (isProcessing) return;
 
+        if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            errorMessage = "Please fill in all required fields.";
+            return;
+        }
+
+        if (selectedRole == "Driver" && string.IsNullOrWhiteSpace(licenseNumber))
+        {
+            errorMessage = "Please enter your license number.";
+            return;
+        }
+
         try
         {
             isProcessing = true;
             errorMessage = "";
             var creds = await AuthService.RegisterAsync(email, password);
-            
-            var customer = new Customer
-            {
-                Name = fullName,
-                Email = email,
-                ContactNumber = ""
-            };
-            
-            await DatabaseService.SaveUserProfileAsync(creds.User.Uid, customer);
-            await DatabaseService.SaveUserRoleAsync(creds.User.Uid, "Customer");
+            var uid = creds.User.Uid;
 
-            NavigationManager.NavigateTo("/dashboard");
+            if (selectedRole == "Driver")
+            {
+                var driver = new Driver
+                {
+                    DriverId = uid,
+                    Name = fullName,
+                    ContactNumber = contactNumber,
+                    LicenseNumber = licenseNumber,
+                    Status = "Offline"
+                };
+                await DatabaseService.SaveDriverAsync(driver);
+                await DatabaseService.SaveUserRoleAsync(uid, "Driver");
+                NavigationManager.NavigateTo("/driver-dashboard");
+            }
+            else
+            {
+                var customer = new Customer
+                {
+                    Name = fullName,
+                    Email = email,
+                    ContactNumber = contactNumber
+                };
+                await DatabaseService.SaveUserProfileAsync(uid, customer);
+                await DatabaseService.SaveUserRoleAsync(uid, "Customer");
+                NavigationManager.NavigateTo("/dashboard");
+            }
         }
         catch (Exception ex)
         {
@@ -119,4 +202,4 @@
             isProcessing = false;
         }
     }
-}
+}

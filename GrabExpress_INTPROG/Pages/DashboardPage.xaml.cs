@@ -17,9 +17,12 @@ public partial class DashboardPage : ContentPage
 
 	}
 
+    private bool _isNavigating = false;
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        _isNavigating = false;
         await LoadUserData();
         await LoadActiveDelivery();
     }
@@ -68,11 +71,15 @@ public partial class DashboardPage : ContentPage
 
     private async void OnExpressTapped(object sender, EventArgs e)
     {
+        if (_isNavigating) return;
+        _isNavigating = true;
         await Shell.Current.GoToAsync(nameof(BookingPage));
     }
 
     private async void OnProfileTapped(object sender, EventArgs e)
     {
+        if (_isNavigating) return;
+        _isNavigating = true;
         await Shell.Current.GoToAsync(nameof(ProfilePage));
     }
 
@@ -80,12 +87,16 @@ public partial class DashboardPage : ContentPage
     {
         if (!string.IsNullOrEmpty(_activeDeliveryId))
         {
+            if (_isNavigating) return;
+            _isNavigating = true;
             await Shell.Current.GoToAsync($"TrackingPage?deliveryId={_activeDeliveryId}");
         }
     }
 
     private async void OnHistoryTapped(object sender, EventArgs e)
     {
+        if (_isNavigating) return;
+        _isNavigating = true;
         await Shell.Current.GoToAsync(nameof(DeliveryHistoryPage));
     }
 }

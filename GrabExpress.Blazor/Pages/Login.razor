@@ -1,6 +1,7 @@
 @page "/login"
 @inject AuthService AuthService
 @inject NavigationManager NavigationManager
+@inject GrabExpress.Blazor.Services.DatabaseService DatabaseService
 
 <div class="auth-wrapper">
     <div class="auth-card shadow-lg p-5 rounded-4 bg-white">
@@ -87,8 +88,21 @@
         {
             isProcessing = true;
             errorMessage = "";
-            await AuthService.LoginAsync(email, password);
-            NavigationManager.NavigateTo("/dashboard");
+            var creds = await AuthService.LoginAsync(email, password);
+            var role = await DatabaseService.GetUserRoleAsync(creds.User.Uid);
+
+            if (role == "Admin")
+            {
+                NavigationManager.NavigateTo("/admin-dashboard");
+            }
+            else if (role == "Driver")
+            {
+                NavigationManager.NavigateTo("/driver-dashboard");
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/dashboard");
+            }
         }
         catch (Exception ex)
         {

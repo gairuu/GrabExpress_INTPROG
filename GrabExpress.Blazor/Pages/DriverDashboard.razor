@@ -63,13 +63,38 @@
                 }
                 else if (isOnline)
                 {
-                    <div class="card border-0 shadow-sm p-5 text-center" style="border-radius: 15px; border: 2px dashed #ddd !important;">
-                        <div class="mb-3">
-                            <i class="bi bi-radar h1 text-grab pulse"></i>
+                    @if (pendingJobs != null && pendingJobs.Any())
+                    {
+                        <h5 class="fw-bold mb-3">Job Requests</h5>
+                        @foreach (var job in pendingJobs)
+                        {
+                            <div class="card border-0 shadow-sm mb-3 p-4" style="border-radius: 15px;">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-warning text-dark">PENDING REQUEST</span>
+                                    <span class="fw-bold text-grab h5 mb-0">₱@job.DeliveryFee.ToString("N2")</span>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-12 small">
+                                        <i class="bi bi-geo-alt-fill text-success me-2"></i><strong>From:</strong> @job.PickupLocation
+                                    </div>
+                                    <div class="col-12 small">
+                                        <i class="bi bi-geo-alt-fill text-danger me-2"></i><strong>To:</strong> @job.DropoffLocation
+                                    </div>
+                                </div>
+                                <button class="btn btn-grab fw-bold py-2" @onclick="() => AcceptJob(job)">ACCEPT THIS JOB</button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="card border-0 shadow-sm p-5 text-center" style="border-radius: 15px; border: 2px dashed #ddd !important;">
+                            <div class="mb-3">
+                                <i class="bi bi-radar h1 text-grab pulse"></i>
+                            </div>
+                            <h5 class="fw-bold">Finding jobs...</h5>
+                            <p class="text-muted">Stay on this page to receive new delivery requests.</p>
                         </div>
-                        <h5 class="fw-bold">Finding jobs...</h5>
-                        <p class="text-muted">Stay on this page to receive new delivery requests.</p>
-                    </div>
+                    }
                 }
                 else
                 {
@@ -126,47 +151,58 @@
 @code {
     private Driver? currentDriver;
     private Delivery? activeJob;
+    private List<Delivery> pendingJobs = new();
     private bool isOnline;
     private decimal todayEarnings = 0;
     private int completedToday = 0;
     private string? userId;
-    private IDisposable? _deliverySubscription;
+    private System.Threading.Timer? _refreshTimer;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated == true)
+        try
         {
-            userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value 
-                     ?? user.FindFirst("sub")?.Value;
-            
-            if (string.IsNullOrEmpty(userId))
-            {
-                userId = await LocalStorage.GetItemAsync<string>(StorageKeys.UserUid);
-            }
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
 
-            if (!string.IsNullOrEmpty(userId))
+            if (user.Identity?.IsAuthenticated == true)
             {
-                currentDriver = await DbService.GetDriverAsync(userId);
+                userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                         ?? user.FindFirst("sub")?.Value;
                 
-                if (currentDriver != null)
+                if (string.IsNullOrEmpty(userId))
                 {
-                    isOnline = currentDriver.Status == "Available" || currentDriver.Status == "Busy";
-                    await RefreshDashboard();
+                    userId = await LocalStorage.GetItemAsync<string>(StorageKeys.UserUid);
+                }
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    currentDriver = await DbService.GetDriverAsync(userId);
                     
-                    // Setup real-time listener for jobs
-                    _deliverySubscription = DbService.GetFirebaseClient()
-                        .Child("Deliveries")
-                        .AsObservable<Delivery>()
-                        .Subscribe(_ => InvokeAsync(RefreshDashboard));
+                    if (currentDriver != null)
+                    {
+                        isOnline = currentDriver.Status == "Available" || currentDriver.Status == "Busy";
+                        await RefreshDashboard();
+                        
+                        // Poll Firebase every 4 seconds for new jobs (streaming not supported in WASM)
+                        _refreshTimer = new System.Threading.Timer(
+                            async _ =>
+                            {
+                                try { await InvokeAsync(async () => { await RefreshDashboard(); StateHasChanged(); }); }
+                                catch (Exception ex) { Console.WriteLine($"Poll error: {ex.Message}"); }
+                            },
+                            null, 0, 4000);
+                    }
                 }
             }
+            else
+            {
+                Navigation.NavigateTo("/login");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Navigation.NavigateTo("/login");
+            Console.WriteLine($"Error initializing DriverDashboard: {ex.Message}");
         }
     }
 
@@ -174,42 +210,83 @@
     {
         if (userId == null) return;
 
-        var jobs = await DbService.GetDriverJobsAsync(userId);
-        
-        // Active job is anything that's not Completed or Cancelled
-        activeJob = jobs.FirstOrDefault(j => j.DeliveryStatus != "Completed" && j.DeliveryStatus != "Cancelled");
-        
-        // Stats
-        var today = DateTime.UtcNow.Date;
-        var todayJobs = jobs.Where(j => j.BookingTime.Date == today && j.DeliveryStatus == "Completed").ToList();
-        todayEarnings = todayJobs.Sum(j => j.DeliveryFee);
-        completedToday = todayJobs.Count;
+        try
+        {
+            var jobs = await DbService.GetDriverJobsAsync(userId);
+            
+            // Active job is anything that is In Transit, Assigned, Payment Pending, or Paid
+            activeJob = jobs.FirstOrDefault(j => j.DeliveryStatus == "In Transit" || j.DeliveryStatus == "Assigned" || j.DeliveryStatus == "Payment Pending" || j.DeliveryStatus == "Paid");
+            
+            // If no active job, look for pending ones
+            if (activeJob == null && isOnline)
+            {
+                pendingJobs = await DbService.GetPendingJobsAsync();
+            }
+            else
+            {
+                pendingJobs.Clear();
+            }
 
-        StateHasChanged();
+            // Stats
+            var today = DateTime.UtcNow.Date;
+            var todayJobs = jobs.Where(j => j != null && j.BookingTime.Date == today && j.DeliveryStatus == "Completed").ToList();
+            todayEarnings = todayJobs.Sum(j => j.DeliveryFee);
+            completedToday = todayJobs.Count;
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error refreshing dashboard: {ex.Message}");
+        }
+    }
+
+    private async Task AcceptJob(Delivery job)
+    {
+        if (userId == null) return;
+        
+        try
+        {
+            await DbService.AssignDriverToDeliveryAsync(job.DeliveryId!, userId);
+            await RefreshDashboard();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error accepting job: {ex.Message}");
+        }
     }
 
     private async Task ToggleOnlineStatus(ChangeEventArgs e)
     {
         if (currentDriver == null || userId == null) return;
 
-        isOnline = (bool)(e.Value ?? false);
-        string newStatus = isOnline ? "Available" : "Offline";
-        
-        // If they have an active job, they should be Busy, not Available
-        if (isOnline && activeJob != null)
+        try
         {
-            newStatus = "Busy";
+            isOnline = (bool)(e.Value ?? false);
+            string newStatus = isOnline ? "Available" : "Offline";
+            
+            // If they have an active job, they should be Busy, not Available
+            if (isOnline && activeJob != null)
+            {
+                newStatus = "Busy";
+            }
+            
+            await DbService.UpdateDriverStatusAsync(userId, newStatus);
+            currentDriver.Status = newStatus;
+            
+            if (isOnline) await RefreshDashboard();
+            
+            StateHasChanged();
         }
-        
-        await DbService.UpdateDriverStatusAsync(userId, newStatus);
-        currentDriver.Status = newStatus;
-        
-        StateHasChanged();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error toggling status: {ex.Message}");
+        }
     }
 
     public void Dispose()
     {
-        _deliverySubscription?.Dispose();
+        _refreshTimer?.Dispose();
     }
 }
 

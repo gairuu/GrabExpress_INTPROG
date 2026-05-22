@@ -8,12 +8,6 @@
 
     <div class="nav-scrollable flex-grow-1 py-3">
         <nav class="flex-column px-2">
-            <div class="nav-item mb-1">
-                <NavLink class="nav-link rounded-3 px-3 py-2" href="" Match="NavLinkMatch.All">
-                    <i class="bi bi-house-door-fill me-3"></i> Home
-                </NavLink>
-            </div>
-            
             <AuthorizeView>
                 <Authorized>
                     @if (context.User.IsInRole("Admin"))
@@ -27,6 +21,11 @@
                     else if (context.User.IsInRole("Driver"))
                     {
                         <div class="nav-item mb-1">
+                            <NavLink class="nav-link rounded-3 px-3 py-2" href="" Match="NavLinkMatch.All">
+                                <i class="bi bi-house-door-fill me-3"></i> Home
+                            </NavLink>
+                        </div>
+                        <div class="nav-item mb-1">
                             <NavLink class="nav-link rounded-3 px-3 py-2" href="driver-dashboard">
                                 <i class="bi bi-truck me-3"></i> Driver Dashboard
                             </NavLink>
@@ -34,6 +33,11 @@
                     }
                     else
                     {
+                        <div class="nav-item mb-1">
+                            <NavLink class="nav-link rounded-3 px-3 py-2" href="" Match="NavLinkMatch.All">
+                                <i class="bi bi-house-door-fill me-3"></i> Home
+                            </NavLink>
+                        </div>
                         <div class="nav-item mb-1">
                             <NavLink class="nav-link rounded-3 px-3 py-2" href="dashboard">
                                 <i class="bi bi-grid-1x2-fill me-3"></i> Dashboard
@@ -49,6 +53,11 @@
                     </div>
                 </Authorized>
                 <NotAuthorized>
+                    <div class="nav-item mb-1">
+                        <NavLink class="nav-link rounded-3 px-3 py-2" href="" Match="NavLinkMatch.All">
+                            <i class="bi bi-house-door-fill me-3"></i> Home
+                        </NavLink>
+                    </div>
                     <div class="nav-item">
                         <NavLink class="nav-link rounded-3 px-3 py-2" href="login">
                             <i class="bi bi-person-fill me-3"></i> Login

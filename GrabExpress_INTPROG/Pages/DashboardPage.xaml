@@ -128,7 +128,6 @@
                         </Grid>
                     </Border>
                 </VerticalStackLayout>
-
             </VerticalStackLayout>
         </ScrollView>
 

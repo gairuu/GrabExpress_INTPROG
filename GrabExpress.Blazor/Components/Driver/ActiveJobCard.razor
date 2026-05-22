@@ -50,6 +50,14 @@
             }
             else if (Job.DeliveryStatus == "In Transit")
             {
+                <button class="btn btn-warning py-3 fw-bold text-dark" @onclick="HandleRequestPayment">Request Payment / Arrived</button>
+            }
+            else if (Job.DeliveryStatus == "Payment Pending")
+            {
+                <div class="alert alert-warning text-center fw-bold mb-0">Waiting for customer to pay...</div>
+            }
+            else if (Job.DeliveryStatus == "Paid")
+            {
                 <button class="btn btn-grab py-3 fw-bold" @onclick="HandleDeliver">Mark as Delivered</button>
             }
         </div>
@@ -70,6 +78,8 @@
     .badge-pending { background-color: #fff3cd; color: #856404; }
     .badge-assigned { background-color: #cfe2ff; color: #084298; }
     .badge-intransit { background-color: #d1e7dd; color: #0f5132; }
+    .badge-payment-pending { background-color: #fff3cd; color: #856404; }
+    .badge-paid { background-color: #cff4fc; color: #055160; }
 
     .delivery-route-visual {
         position: relative;
@@ -123,6 +133,8 @@
         "Pending" => "badge-pending",
         "Assigned" => "badge-assigned",
         "In Transit" => "badge-intransit",
+        "Payment Pending" => "badge-payment-pending",
+        "Paid" => "badge-paid",
         _ => "bg-secondary text-white"
     };
 
@@ -136,6 +148,12 @@
     private async Task HandlePickUp()
     {
         await DbService.UpdateDeliveryStatusAsync(Job.DeliveryId!, "In Transit");
+        await OnStatusChanged.InvokeAsync();
+    }
+
+    private async Task HandleRequestPayment()
+    {
+        await DbService.UpdateDeliveryStatusAsync(Job.DeliveryId!, "Payment Pending");
         await OnStatusChanged.InvokeAsync();
     }
 

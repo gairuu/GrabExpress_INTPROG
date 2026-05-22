@@ -14,7 +14,7 @@ else
         <div class="dashboard-banner p-5 text-white shadow-sm">
             <div class="container-fluid p-0">
                 <div class="row align-items-center">
-                    <div class="col-8">
+                    <div class="col-12">
                         <div class="d-flex align-items-center mb-2">
                             <div class="premium-avatar shadow-sm me-3">
                                 <i class="bi bi-person-fill"></i>
@@ -25,92 +25,49 @@ else
                             </div>
                         </div>
                     </div>
-                    <div class="col-4 text-end">
-                        <span class="badge rounded-pill bg-white text-success px-3 py-2 fw-bold">PRO ACCOUNT</span>
-                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Floating Service Cards Area -->
-        <div class="container-fluid px-5 negative-margin-top">
+        <div class="container-fluid px-5 dashboard-content-area">
             <div class="row g-4">
-                <!-- Express Booking Card -->
-                <div class="col-lg-8">
-                    <div class="main-service-card shadow-lg p-5 rounded-5 border-0 position-relative overflow-hidden" @onclick='() => OnViewChanged.InvokeAsync("Booking")'>
+                <!-- Express Booking Card Full Width -->
+                <div class="col-12">
+                    <div class="main-service-card shadow-lg p-4 rounded-5 border-0 position-relative overflow-hidden" @onclick='() => OnViewChanged.InvokeAsync("Booking")'>
                         <div class="row align-items-center position-relative" style="z-index: 2;">
                             <div class="col-md-7 text-start">
                                 <span class="badge bg-white text-success mb-3 px-3 py-2 fw-bold">POPULAR SERVICE</span>
-                                <h1 class="display-5 fw-bolder mb-3">Express Delivery</h1>
+                                <h1 class="h2 fw-bolder mb-3">Express Delivery</h1>
                                 <p class="lead opacity-75 mb-4">Need to send a package right now? Our riders are ready to pick up your parcel in minutes.</p>
                                 <button class="btn btn-light btn-lg px-5 rounded-pill fw-bold text-success shadow">
                                     Book Now <i class="bi bi-arrow-right ms-2"></i>
                                 </button>
                             </div>
-                            <div class="col-md-5 d-none d-md-block text-center">
+                            <div class="col-md-5 d-none d-md-block text-end pe-5">
                                 <div class="floating-box-medium">📦</div>
                             </div>
                         </div>
                         <div class="card-bg-decoration"></div>
                     </div>
                 </div>
-
-                <!-- Stats / Quick Info -->
-                <div class="col-lg-4">
-                    <div class="stats-card h-100 p-4 shadow-sm border-0 rounded-5 bg-white d-flex flex-column justify-content-between">
-                        <div class="mb-4">
-                            <h5 class="fw-bold text-dark mb-4">Quick Stats</h5>
-                            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon-circle bg-success-light text-success me-3"><i class="bi bi-box-seam"></i></div>
-                                    <span class="fw-bold">Active Jobs</span>
-                                </div>
-                                <span class="h4 mb-0 fw-bolder text-success">0</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon-circle bg-primary-light text-primary me-3"><i class="bi bi-check-circle"></i></div>
-                                    <span class="fw-bold">Completed</span>
-                                </div>
-                                <span class="h4 mb-0 fw-bolder text-primary">0</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-outline-success w-100 py-3 rounded-pill fw-bold" @onclick='() => OnViewChanged.InvokeAsync("History")'>
-                            View Full History <i class="bi bi-clock-history ms-2"></i>
-                        </button>
-                    </div>
-                </div>
             </div>
 
-            <!-- Other Services Section -->
+        </div>
+
+            <!-- Booking History Card -->
             <div class="mt-5 pb-5">
-                <h4 class="fw-bolder text-dark mb-4">Explore More Services</h4>
                 <div class="row g-4">
                     <div class="col-md-4">
                         <div class="mini-service-card shadow-sm p-4 bg-white rounded-5 text-center" @onclick='() => OnViewChanged.InvokeAsync("History")'>
                             <div class="icon-sq-bg mb-3 mx-auto" style="background-color: #f1f1ff;"><i class="bi bi-journal-text fs-3 text-primary"></i></div>
-                            <h5 class="fw-bold">My Bookings</h5>
-                            <p class="small text-muted mb-0">Track and manage your current delivery requests.</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mini-service-card shadow-sm p-4 bg-white rounded-5 text-center" @onclick='() => OnViewChanged.InvokeAsync("Profile")'>
-                            <div class="icon-sq-bg mb-3 mx-auto" style="background-color: #fff5f5;"><i class="bi bi-person-gear fs-3 text-danger"></i></div>
-                            <h5 class="fw-bold">Account Settings</h5>
-                            <p class="small text-muted mb-0">Update your profile, addresses, and payment methods.</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mini-service-card shadow-sm p-4 bg-white rounded-5 text-center">
-                            <div class="icon-sq-bg mb-3 mx-auto" style="background-color: #fef8e7;"><i class="bi bi-headset fs-3 text-warning"></i></div>
-                            <h5 class="fw-bold">Help Center</h5>
-                            <p class="small text-muted mb-0">Have an issue? Our support team is here to help 24/7.</p>
+                            <h5 class="fw-bold">Booking History</h5>
+                            <p class="small text-muted mb-0">View all your past and active deliveries here.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 }
 
 <style>
@@ -120,7 +77,7 @@ else
     }
     .dashboard-banner {
         background: linear-gradient(135deg, #00b14f 0%, #00813a 100%);
-        padding-bottom: 120px !important;
+        padding-bottom: 50px !important;
     }
     .premium-avatar {
         width: 60px;
@@ -133,8 +90,8 @@ else
         justify-content: center;
         font-size: 2rem;
     }
-    .negative-margin-top {
-        margin-top: -60px;
+    .dashboard-content-area {
+        margin-top: 30px;
     }
     .main-service-card {
         background: linear-gradient(135deg, #00b14f 0%, #009140 100%);

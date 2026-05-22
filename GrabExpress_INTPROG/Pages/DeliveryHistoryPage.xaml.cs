@@ -1,204 +1,311 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using GrabExpress_INTPROG.Models;
 using GrabExpress_INTPROG.Services;
-using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
 namespace GrabExpress_INTPROG.Pages;
 
 public partial class DeliveryHistoryPage : ContentPage
 {
-    private readonly DatabaseService _databaseService;
     private readonly AuthService _authService;
+    private readonly DatabaseService _databaseService;
 
-    public DeliveryHistoryPage(DatabaseService databaseService, AuthService authService)
+    private List<DeliveryHistoryItemViewModel> _allItems = new();
+    private List<DeliveryHistoryItemViewModel> _filteredItems = new();
+    private string _selectedStatus = "All";
+    private bool _isNavigating = false;
+
+    public List<DeliveryHistoryItemViewModel> FilteredItems
+    {
+        get => _filteredItems;
+        set
+        {
+            _filteredItems = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public DeliveryHistoryPage(AuthService authService, DatabaseService databaseService)
     {
         InitializeComponent();
-        _databaseService = databaseService;
         _authService = authService;
+        _databaseService = databaseService;
+        BindingContext = this;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await LoadHistory();
+        _isNavigating = false;
+        ReceiptModalOverlay.IsVisible = false;
+        await LoadHistoryAsync();
     }
 
-    private async Task LoadHistory()
+    private async Task LoadHistoryAsync()
     {
-        LoadingIndicator.IsVisible = true;
-        LoadingIndicator.IsRunning = true;
-        EmptyState.IsVisible = false;
-        HistoryContainer.Children.Clear();
-
         try
         {
             var currentUser = _authService.GetCurrentUser();
             if (currentUser == null) return;
 
-            var history = await _databaseService.GetCustomerDeliveryHistoryAsync(currentUser.Uid);
+            // Fetch ALL deliveries for this customer
+            var allDeliveries = await _databaseService.GetAllDeliveriesAsync();
+            var customerDeliveries = allDeliveries
+                .Where(d => d.CustomerId == currentUser.Uid)
+                .OrderByDescending(d => d.BookingTime)
+                .ToList();
 
-            LoadingIndicator.IsVisible = false;
-            LoadingIndicator.IsRunning = false;
+            // Calculate metrics
+            decimal totalSpent = customerDeliveries.Where(d => d.DeliveryStatus == "Completed").Sum(d => d.DeliveryFee);
+            int completedCount = customerDeliveries.Count(d => d.DeliveryStatus == "Completed");
+            int activeCount = customerDeliveries.Count(d => IsActiveStatus(d.DeliveryStatus));
 
-            if (history == null || history.Count == 0)
+            TotalSpentLabel.Text = $"₱{totalSpent:N2}";
+            CompletedCountLabel.Text = completedCount.ToString();
+            ActiveCountLabel.Text = activeCount.ToString();
+
+            // Map models
+            _allItems = customerDeliveries.Select(d => new DeliveryHistoryItemViewModel
             {
-                EmptyState.IsVisible = true;
-                return;
-            }
+                DeliveryId = d.DeliveryId,
+                PickupLocation = d.PickupLocation,
+                DropoffLocation = d.DropoffLocation,
+                BookingTime = d.BookingTime,
+                DeliveryStatus = d.DeliveryStatus,
+                DeliveryFee = d.DeliveryFee,
+                RawDelivery = d
+            }).ToList();
 
-            foreach (var delivery in history)
-            {
-                HistoryContainer.Children.Add(BuildCard(delivery));
-            }
+            ApplyFilters();
         }
-        catch
+        catch (Exception ex)
         {
-            LoadingIndicator.IsVisible = false;
-            LoadingIndicator.IsRunning = false;
-            EmptyState.IsVisible = true;
+            Console.WriteLine($"Error loading history: {ex.Message}");
         }
     }
 
-    private static RoundRectangle RR(double r) =>
-        new RoundRectangle { CornerRadius = new CornerRadius(r) };
-
-    private View BuildCard(Delivery delivery)
+    private void ApplyFilters()
     {
-        bool isCompleted = delivery.DeliveryStatus == "Completed";
-        string icon    = isCompleted ? "✅" : "✖";
-        string bgColor = isCompleted ? "#E8F5E9" : "#FFEBEE";
-        string badgeBg = isCompleted ? "#00B14F" : "#C62828";
-        string label   = isCompleted ? "Completed" : "Cancelled";
+        var query = _allItems.AsEnumerable();
 
-        // Status icon circle
-        var iconBadge = new Border
+        // Filter by search entry
+        var text = SearchEntry.Text?.Trim().ToLowerInvariant();
+        if (!string.IsNullOrEmpty(text))
         {
-            BackgroundColor = Color.FromArgb(bgColor),
-            StrokeThickness = 0,
-            StrokeShape     = RR(14),
-            WidthRequest    = 46,
-            HeightRequest   = 46,
-            VerticalOptions = LayoutOptions.Center,
-            Content = new Label
-            {
-                Text              = icon,
-                FontSize          = 20,
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions   = LayoutOptions.Center
-            }
-        };
+            query = query.Where(i => (i.PickupLocation?.ToLowerInvariant().Contains(text) == true) ||
+                                     (i.DropoffLocation?.ToLowerInvariant().Contains(text) == true));
+        }
 
-        // Status pill
-        var pill = new Border
+        // Filter by active pill status
+        if (_selectedStatus == "Active")
         {
-            BackgroundColor = Color.FromArgb(badgeBg),
-            StrokeThickness = 0,
-            StrokeShape     = RR(8),
-            Padding         = new Thickness(8, 3),
-            HorizontalOptions = LayoutOptions.End,
-            Content = new Label
-            {
-                Text              = label,
-                FontSize          = 10,
-                FontAttributes    = FontAttributes.Bold,
-                TextColor         = Colors.White,
-                HorizontalOptions = LayoutOptions.Center
-            }
-        };
+            query = query.Where(i => IsActiveStatus(i.DeliveryStatus));
+        }
+        else if (_selectedStatus == "Completed")
+        {
+            query = query.Where(i => i.DeliveryStatus == "Completed");
+        }
+        else if (_selectedStatus == "Cancelled")
+        {
+            query = query.Where(i => i.DeliveryStatus == "Cancelled");
+        }
 
-        // Middle column
-        var centre = new VerticalStackLayout
+        FilteredItems = query.ToList();
+    }
+
+    private bool IsActiveStatus(string? status)
+    {
+        return status == "Pending" || status == "In Transit" || status == "Payment Pending" || status == "Paid" || status == "Delivered";
+    }
+
+    // Filters Tap Handlers
+    private void OnFilterAllTapped(object sender, EventArgs e) => UpdateFilterPill("All", PillAll, LabelAll);
+    private void OnFilterActiveTapped(object sender, EventArgs e) => UpdateFilterPill("Active", PillActive, LabelActive);
+    private void OnFilterCompletedTapped(object sender, EventArgs e) => UpdateFilterPill("Completed", PillCompleted, LabelCompleted);
+    private void OnFilterCancelledTapped(object sender, EventArgs e) => UpdateFilterPill("Cancelled", PillCancelled, LabelCancelled);
+
+    private void UpdateFilterPill(string status, Border activeBorder, Label activeLabel)
+    {
+        _selectedStatus = status;
+
+        // Reset all pills
+        ResetPill(PillAll, LabelAll);
+        ResetPill(PillActive, LabelActive);
+        ResetPill(PillCompleted, LabelCompleted);
+        ResetPill(PillCancelled, LabelCancelled);
+
+        // Highlight selected
+        activeBorder.BackgroundColor = Color.FromArgb("#00B14F");
+        activeBorder.StrokeThickness = 0;
+        activeLabel.TextColor = Colors.White;
+
+        ApplyFilters();
+    }
+
+    private void ResetPill(Border border, Label label)
+    {
+        border.BackgroundColor = Colors.White;
+        border.Stroke = Color.FromArgb("#E2E8F0");
+        border.StrokeThickness = 1;
+        label.TextColor = Color.FromArgb("#4A5568");
+    }
+
+    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        ApplyFilters();
+    }
+
+    // Modal Operations
+    private async Task ShowReceiptAsync(DeliveryHistoryItemViewModel item)
+    {
+        ReceiptRefLabel.Text = $"#{item.DeliveryId?.Substring(Math.Max(0, (item.DeliveryId?.Length ?? 0) - 10))}";
+        ReceiptPickupLabel.Text = item.PickupLocation;
+        ReceiptDropoffLabel.Text = item.DropoffLocation;
+        ReceiptBaseFareLabel.Text = item.FeeFormatted;
+        ReceiptTotalPaidLabel.Text = item.FeeFormatted;
+
+        // Populate Driver details dynamically
+        ReceiptDriverContainer.Children.Clear();
+        if (string.IsNullOrEmpty(item.RawDelivery.DriverId))
         {
-            VerticalOptions = LayoutOptions.Center,
-            Spacing = 3,
-            Children =
+            ReceiptDriverContainer.Children.Add(new Label { Text = "No driver assigned.", FontSize = 11, TextColor = Color.FromArgb("#718096") });
+        }
+        else
+        {
+            ReceiptDriverContainer.Children.Add(new ActivityIndicator { IsRunning = true, Color = Color.FromArgb("#00B14F"), HeightRequest = 20, WidthRequest = 20 });
+            try
             {
-                new Label
+                var driver = await _databaseService.GetDriverAsync(item.RawDelivery.DriverId);
+                var vehicle = await _databaseService.GetVehicleAsync(item.RawDelivery.DriverId);
+
+                ReceiptDriverContainer.Children.Clear();
+                if (driver != null)
                 {
-                    Text           = $"From: {delivery.PickupLocation ?? "—"}",
-                    FontSize       = 13,
-                    FontAttributes = FontAttributes.Bold,
-                    TextColor      = Color.FromArgb("#1A1A1A"),
-                    LineBreakMode  = LineBreakMode.TailTruncation
-                },
-                new Label
+                    ReceiptDriverContainer.Children.Add(new Label { Text = driver.Name, FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#2D3748") });
+                    if (vehicle != null)
+                    {
+                        ReceiptDriverContainer.Children.Add(new Label { Text = $"Vehicle: {vehicle.Color} {vehicle.VehicleModel} ({vehicle.PlateNumber})", FontSize = 10, TextColor = Color.FromArgb("#718096") });
+                    }
+                    else
+                    {
+                        ReceiptDriverContainer.Children.Add(new Label { Text = $"Contact: {driver.ContactNumber}", FontSize = 10, TextColor = Color.FromArgb("#718096") });
+                    }
+                }
+                else
                 {
-                    Text          = $"To: {delivery.DropoffLocation ?? "—"}",
-                    FontSize      = 12,
-                    TextColor     = Color.FromArgb("#555555"),
-                    LineBreakMode = LineBreakMode.TailTruncation
-                },
-                new Label
-                {
-                    Text      = delivery.BookingTime.ToString("MMM dd, yyyy"),
-                    FontSize  = 11,
-                    TextColor = Color.FromArgb("#AAAAAA")
+                    ReceiptDriverContainer.Children.Add(new Label { Text = "Driver details unavailable.", FontSize = 11, TextColor = Color.FromArgb("#718096") });
                 }
             }
-        };
-
-        // Right column
-        var right = new VerticalStackLayout
-        {
-            VerticalOptions   = LayoutOptions.Center,
-            HorizontalOptions = LayoutOptions.End,
-            Spacing           = 4,
-            Children =
+            catch
             {
-                new Label
-                {
-                    Text              = $"₱{delivery.DeliveryFee:N0}",
-                    FontSize          = 14,
-                    FontAttributes    = FontAttributes.Bold,
-                    TextColor         = Color.FromArgb("#00B14F"),
-                    HorizontalOptions = LayoutOptions.End
-                },
-                pill
+                ReceiptDriverContainer.Children.Clear();
+                ReceiptDriverContainer.Children.Add(new Label { Text = "Driver details unavailable.", FontSize = 11, TextColor = Color.FromArgb("#718096") });
             }
-        };
+        }
 
-        var grid = new Grid
+        ReceiptModalOverlay.IsVisible = true;
+    }
+
+    private void OnCloseReceiptTapped(object sender, EventArgs e)
+    {
+        ReceiptModalOverlay.IsVisible = false;
+    }
+
+    private void OnCloseReceiptClicked(object sender, EventArgs e)
+    {
+        ReceiptModalOverlay.IsVisible = false;
+    }
+
+    private void OnModalBodyTapped(object sender, EventArgs e)
+    {
+        // Intercept to prevent backdrop tap close
+    }
+
+    private async void OnReceiptClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.CommandParameter is DeliveryHistoryItemViewModel item)
         {
-            ColumnDefinitions = new ColumnDefinitionCollection
+            await ShowReceiptAsync(item);
+        }
+    }
+
+    private async void OnCardTapped(object sender, EventArgs e)
+    {
+        if (sender is Border border && border.GestureRecognizers.FirstOrDefault() is TapGestureRecognizer recognizer)
+        {
+            var item = border.BindingContext as DeliveryHistoryItemViewModel;
+            if (item != null && IsActiveStatus(item.DeliveryStatus))
             {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = GridLength.Auto }
-            },
-            ColumnSpacing = 14
-        };
-        grid.Add(iconBadge, 0, 0);
-        grid.Add(centre,    1, 0);
-        grid.Add(right,     2, 0);
+                if (_isNavigating) return;
+                _isNavigating = true;
 
-        var border = new Border
-        {
-            BackgroundColor = Colors.White,
-            StrokeThickness = 0,
-            StrokeShape     = RR(16),
-            Padding         = new Thickness(18, 16),
-            Shadow          = new Shadow
-            {
-                Brush   = new SolidColorBrush(Color.FromArgb("#000000")),
-                Offset  = new Point(0, 2),
-                Radius  = 8,
-                Opacity = 0.06f
-            },
-            Content = grid
-        };
-
-        var tapGesture = new TapGestureRecognizer();
-        tapGesture.Tapped += async (s, e) =>
-        {
-            await Shell.Current.GoToAsync($"TrackingPage?deliveryId={delivery.DeliveryId}");
-        };
-        border.GestureRecognizers.Add(tapGesture);
-
-        return border;
+                await Shell.Current.GoToAsync($"TrackingPage?deliveryId={item.DeliveryId}");
+            }
+        }
     }
 
     private async void OnBackTapped(object sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync("..");
+        if (_isNavigating) return;
+        _isNavigating = true;
+
+        await Shell.Current.GoToAsync("///DashboardPage");
     }
+
+    protected override bool OnBackButtonPressed()
+    {
+        if (!_isNavigating)
+        {
+            _isNavigating = true;
+            Dispatcher.Dispatch(async () =>
+            {
+                await Shell.Current.GoToAsync("///DashboardPage");
+            });
+        }
+        return true;
+    }
+}
+
+public class DeliveryHistoryItemViewModel
+{
+    public string? DeliveryId { get; set; }
+    public string? PickupLocation { get; set; }
+    public string? DropoffLocation { get; set; }
+    public DateTime BookingTime { get; set; }
+    public string BookingTimeFormatted => BookingTime.ToString("MMM dd, yyyy • hh:mm tt");
+    public string? DeliveryStatus { get; set; }
+    
+    public string StatusText => DeliveryStatus ?? "Unknown";
+
+    public Color StatusBgColor => DeliveryStatus switch
+    {
+        "Pending" => Color.FromArgb("#FEF3C7"), // Light Warning Amber
+        "In Transit" => Color.FromArgb("#DBEAFE"), // Light Primary Blue
+        "Payment Pending" => Color.FromArgb("#DBEAFE"),
+        "Paid" => Color.FromArgb("#DBEAFE"),
+        "Delivered" => Color.FromArgb("#D1FAE5"), // Light Success Green
+        "Completed" => Color.FromArgb("#D1FAE5"),
+        "Cancelled" => Color.FromArgb("#FEE2E2"), // Light Danger Red
+        _ => Color.FromArgb("#EDF2F7")
+    };
+
+    public Color StatusTextColor => DeliveryStatus switch
+    {
+        "Pending" => Color.FromArgb("#B7791F"), // Amber Dark
+        "In Transit" => Color.FromArgb("#1D4ED8"), // Blue Dark
+        "Payment Pending" => Color.FromArgb("#1D4ED8"),
+        "Paid" => Color.FromArgb("#1D4ED8"),
+        "Delivered" => Color.FromArgb("#065F46"), // Green Dark
+        "Completed" => Color.FromArgb("#065F46"),
+        "Cancelled" => Color.FromArgb("#9B1C1C"), // Red Dark
+        _ => Color.FromArgb("#4A5568")
+    };
+
+    public decimal DeliveryFee { get; set; }
+    public string FeeFormatted => $"₱{DeliveryFee:0.00}";
+    
+    public Delivery RawDelivery { get; set; } = null!;
 }

@@ -65,21 +65,23 @@ public partial class BookingPage : ContentPage
         }
     }
 
-    private void OnSuggestionTapped(object sender, EventArgs e)
+    private void OnPickupSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var label = (Label)sender;
-        var text = label.Text;
-        
-        // Find which entry this suggestion belongs to
-        if (PickupSuggestions.IsVisible)
+        if (e.CurrentSelection.FirstOrDefault() is string selectedCity)
         {
-            PickupEntry.Text = text;
+            PickupEntry.Text = selectedCity;
             PickupSuggestions.IsVisible = false;
+            PickupSuggestions.SelectedItem = null;
         }
-        else if (DropoffSuggestions.IsVisible)
+    }
+
+    private void OnDropoffSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.FirstOrDefault() is string selectedCity)
         {
-            DropoffEntry.Text = text;
+            DropoffEntry.Text = selectedCity;
             DropoffSuggestions.IsVisible = false;
+            DropoffSuggestions.SelectedItem = null;
         }
     }
 

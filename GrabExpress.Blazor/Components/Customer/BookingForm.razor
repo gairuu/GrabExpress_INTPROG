@@ -15,12 +15,19 @@
 
     <!-- White Body -->
     <div class="booking-body p-4">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mb-4 rounded-4 small shadow-sm border-0">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorMessage
+            </div>
+        }
+
         <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
             <!-- Pickup -->
             <div class="mb-4">
                 <div class="d-flex align-items-center mb-2">
-                    <span class="me-2">📍</span>
-                    <span class="fw-bold text-muted small uppercase">Pickup Location</span>
+                    <span class="me-2 text-success">📍</span>
+                    <span class="fw-bold text-muted small text-uppercase">Pickup Location</span>
                 </div>
                 <input type="text" class="form-control border-0 bg-light p-3 rounded-3" 
                        placeholder="Where to pick up from?" @bind="pickup" />
@@ -29,8 +36,8 @@
             <!-- Divider with Swap -->
             <div class="position-relative text-center my-2">
                 <hr class="opacity-10" />
-                <button class="btn btn-light shadow-sm rounded-circle position-absolute top-50 start-50 translate-middle"
-                        style="width: 40px; height: 40px;" @onclick="SwapLocations">
+                <button class="btn btn-light shadow-sm rounded-circle position-absolute top-50 start-50 translate-middle border-0"
+                        style="width: 40px; height: 40px; z-index: 5;" @onclick="SwapLocations">
                     <i class="bi bi-arrow-down-up text-success"></i>
                 </button>
             </div>
@@ -38,8 +45,8 @@
             <!-- Drop-off -->
             <div class="mt-4">
                 <div class="d-flex align-items-center mb-2">
-                    <span class="me-2">🏁</span>
-                    <span class="fw-bold text-muted small uppercase">Drop-off Location</span>
+                    <span class="me-2 text-danger">🏁</span>
+                    <span class="fw-bold text-muted small text-uppercase">Drop-off Location</span>
                 </div>
                 <input type="text" class="form-control border-0 bg-light p-3 rounded-3" 
                        placeholder="Where to deliver to?" @bind="dropoff" />
@@ -47,16 +54,29 @@
         </div>
 
         <!-- Calculate Button -->
-        <button class="btn btn-success w-100 p-3 rounded-4 fw-bold shadow-sm" @onclick="CalculateFee">
+        <button class="btn btn-success w-100 p-3 rounded-4 fw-bold shadow-sm mb-3" @onclick="CalculateFee">
             <span class="me-2">🔍</span> CALCULATE DELIVERY FEE
         </button>
 
         @if (fee > 0)
         {
-            <div class="mt-4 p-3 bg-white rounded-4 border text-center shadow-sm animated-fade-in">
-                <div class="text-muted small mb-1">Estimated Fee</div>
-                <div class="h3 fw-bold text-success">₱@fee.ToString("F2")</div>
-                <button class="btn btn-success w-100 mt-3 rounded-pill" @onclick="ConfirmBooking">Confirm & Pay</button>
+            <div class="mt-2 p-4 bg-white rounded-4 border-0 shadow-sm text-center animated-fade-in">
+                <div class="text-muted small mb-1 fw-bold">ESTIMATED FEE</div>
+                <div class="display-6 fw-bold text-success mb-3">₱@fee.ToString("N2")</div>
+                
+                @if (isBooking)
+                {
+                    <button class="btn btn-success w-100 p-3 rounded-pill shadow-sm" disabled>
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        CONFIRMING...
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-success w-100 p-3 rounded-pill shadow-sm fw-bold" @onclick="ConfirmBooking">
+                        CONFIRM & BOOK NOW
+                    </button>
+                }
             </div>
         }
     </div>
@@ -79,11 +99,15 @@
         background-color: #00b14f;
         border-color: #00b14f;
     }
+    .btn-success:hover {
+        background-color: #00813a;
+        border-color: #00813a;
+    }
     .animated-fade-in {
-        animation: fadeIn 0.3s ease-in;
+        animation: fadeIn 0.3s ease-out;
     }
     @@keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(15px); }
         to { opacity: 1; transform: translateY(0); }
     }
 </style>
@@ -93,24 +117,81 @@
     private string pickup = "";
     private string dropoff = "";
     private decimal fee = 0;
+    private bool isBooking = false;
+    private string? errorMessage;
 
     private void SwapLocations()
     {
         var temp = pickup;
         pickup = dropoff;
         dropoff = temp;
+        errorMessage = null;
     }
 
     private void CalculateFee()
     {
-        if (string.IsNullOrWhiteSpace(pickup) || string.IsNullOrWhiteSpace(dropoff)) return;
-        fee = DatabaseService.CalculateDeliveryFee(pickup, dropoff);
+        try
+        {
+            errorMessage = null;
+            if (string.IsNullOrWhiteSpace(pickup) || string.IsNullOrWhiteSpace(dropoff))
+            {
+                errorMessage = "Please enter both pickup and drop-off locations.";
+                fee = 0;
+                return;
+            }
+            fee = DatabaseService.CalculateDeliveryFee(pickup, dropoff);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Calculation error. Please refresh and try again.";
+            Console.WriteLine($"Fee calc error: {ex.Message}");
+        }
     }
 
     private async Task ConfirmBooking()
     {
-        // This would involve saving to Firebase and redirecting to a Tracking view
-        // For now, let's just go back
-        await OnViewChanged.InvokeAsync("Dashboard");
+        if (isBooking) return;
+        isBooking = true;
+        errorMessage = null;
+
+        try
+        {
+            var uid = await LocalStorage.GetItemAsync<string>(StorageKeys.UserUid);
+            if (string.IsNullOrEmpty(uid))
+            {
+                errorMessage = "Your session has expired. Please log in again.";
+                return;
+            }
+
+            var delivery = new Delivery
+            {
+                CustomerId = uid,
+                PickupLocation = pickup,
+                DropoffLocation = dropoff,
+                DeliveryFee = fee,
+                DeliveryStatus = "Pending",
+                BookingTime = DateTime.UtcNow
+            };
+
+            var deliveryId = await DatabaseService.CreateDeliveryAsync(delivery);
+            
+            if (!string.IsNullOrEmpty(deliveryId))
+            {
+                await OnViewChanged.InvokeAsync($"Tracking:{deliveryId}");
+            }
+            else
+            {
+                errorMessage = "Server error: Could not save booking. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Network error. Please check your connection.";
+            Console.WriteLine($"Booking failed: {ex.Message}");
+        }
+        finally
+        {
+            isBooking = false;
+        }
     }
 }

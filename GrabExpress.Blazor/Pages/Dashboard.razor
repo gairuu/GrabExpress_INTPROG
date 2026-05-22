@@ -15,52 +15,81 @@
 }
 else if (userRole == "Customer" || userRole == "Admin" || userRole == null)
 {
-    @if (currentView == "Dashboard")
-    {
-        <CustomerDashboard OnViewChanged="ChangeView" />
-    }
-    else if (currentView == "Booking")
-    {
-        <BookingForm OnViewChanged="ChangeView" />
-    }
-    else if (currentView == "Profile")
-    {
-        <CustomerProfile OnViewChanged="ChangeView" />
-    }
-    else
-    {
-        <CustomerDashboard OnViewChanged="ChangeView" />
-    }
+    <div class="dashboard-content">
+        @if (currentView == "Dashboard")
+        {
+            <CustomerDashboard OnViewChanged="ChangeView" />
+        }
+        else if (currentView == "Booking")
+        {
+            <BookingForm OnViewChanged="ChangeView" />
+        }
+        else if (currentView == "Tracking" && !string.IsNullOrEmpty(selectedDeliveryId))
+        {
+            <DeliveryTracking DeliveryId="@selectedDeliveryId" OnViewChanged="ChangeView" />
+        }
+        else if (currentView == "Profile")
+        {
+            <CustomerProfile OnViewChanged="ChangeView" />
+        }
+
+        else if (currentView == "History")
+        {
+            <DeliveryHistory OnViewChanged="ChangeView" />
+        }
+        else
+        {
+            <CustomerDashboard OnViewChanged="ChangeView" />
+        }
+    </div>
 }
 
 @code {
     private bool isLoading = true;
     private string? userRole;
     private string currentView = "Dashboard";
+    private string? selectedDeliveryId;
 
     protected override async Task OnInitializedAsync()
     {
-        var uid = await LocalStorage.GetItemAsync<string>(StorageKeys.UserUid);
-        if (!string.IsNullOrEmpty(uid))
+        try
         {
-            userRole = await DatabaseService.GetUserRoleAsync(uid);
+            var uid = await LocalStorage.GetItemAsync<string>(StorageKeys.UserUid);
+            if (!string.IsNullOrEmpty(uid))
+            {
+                userRole = await DatabaseService.GetUserRoleAsync(uid);
 
-            if (userRole == "Driver")
-            {
-                NavigationManager.NavigateTo("/driver-dashboard");
-                return;
-            }
-            if (userRole == "Admin")
-            {
-                NavigationManager.NavigateTo("/admin-dashboard");
-                return;
+                if (userRole == "Driver")
+                {
+                    NavigationManager.NavigateTo("/driver-dashboard");
+                    return;
+                }
+                if (userRole == "Admin")
+                {
+                    // Admins stay here
+                }
             }
         }
-        isLoading = false;
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Dashboard init error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private void ChangeView(string newView)
     {
-        currentView = newView;
+        if (newView.StartsWith("Tracking:"))
+        {
+            selectedDeliveryId = newView.Substring(9);
+            currentView = "Tracking";
+        }
+        else
+        {
+            currentView = newView;
+        }
     }
 }

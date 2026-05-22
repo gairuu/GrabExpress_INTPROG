@@ -1,0 +1,108 @@
+@inject DatabaseService DatabaseService
+@inject ILocalStorageService LocalStorage
+
+<div class="delivery-history-wrapper p-4 p-md-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bolder text-dark mb-1">Booking History</h2>
+            <p class="text-muted mb-0">View all your past and active deliveries.</p>
+        </div>
+        <button class="btn btn-outline-secondary rounded-pill px-4" @onclick='() => OnViewChanged.InvokeAsync("Dashboard")'>
+            <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+        </button>
+    </div>
+
+    <div class="bg-white rounded-4 shadow-sm overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3">Date</th>
+                        <th class="py-3">Dropoff</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Price</th>
+                        <th class="text-end pe-4 py-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (myDeliveries == null)
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <div class="spinner-border text-success mb-2" role="status"></div>
+                                <div>Loading history...</div>
+                            </td>
+                        </tr>
+                    }
+                    else if (!myDeliveries.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-journal-x fs-1 text-secondary opacity-50 d-block mb-3"></i>
+                                No bookings found yet. Time to send something!
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var delivery in myDeliveries)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-secondary">@delivery.BookingTime.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 250px;" title="@delivery.DropoffLocation">
+                                        @delivery.DropoffLocation
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge @(GetStatusBadge(delivery.DeliveryStatus))">@delivery.DeliveryStatus</span>
+                                </td>
+                                <td class="fw-bold">₱@delivery.DeliveryFee.ToString("0.00")</td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-outline-success rounded-pill px-3" @onclick='() => OnViewChanged.InvokeAsync($"Tracking:{delivery.DeliveryId}")'>
+                                        Track <i class="bi bi-geo-alt ms-1"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .delivery-history-wrapper {
+        min-height: 100vh;
+        background-color: #f0f2f5;
+    }
+</style>
+
+@code {
+    [Parameter] public EventCallback<string> OnViewChanged { get; set; }
+    private List<Delivery>? myDeliveries;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uid = await LocalStorage.GetItemAsync<string>("userUid");
+        if (!string.IsNullOrEmpty(uid))
+        {
+            var allDeliveries = await DatabaseService.GetAllDeliveriesAsync();
+            myDeliveries = allDeliveries
+                .Where(d => d.CustomerId == uid)
+                .OrderByDescending(d => d.BookingTime)
+                .ToList();
+        }
+    }
+
+    private string GetStatusBadge(string? status) => status switch
+    {
+        "Pending" => "bg-warning text-dark",
+        "In Transit" => "bg-primary",
+        "Delivered" => "bg-info text-dark",
+        "Completed" => "bg-success",
+        "Cancelled" => "bg-danger",
+        _ => "bg-secondary"
+    };
+}

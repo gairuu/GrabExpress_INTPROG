@@ -59,6 +59,7 @@ namespace GrabExpress.Blazor.Services
                     .ToHashSet();
 
                 return customers
+                    .Where(c => c.Object != null)
                     .Select(c => 
                     {
                         var cust = c.Object;
@@ -156,6 +157,7 @@ namespace GrabExpress.Blazor.Services
                 .OnceAsync<Vehicle>();
 
             return vehicles
+                .Where(v => v.Object != null)
                 .Select(v => v.Object)
                 .FirstOrDefault(v => v.DriverId == driverId);
         }
@@ -167,6 +169,7 @@ namespace GrabExpress.Blazor.Services
                 .OnceAsync<Driver>();
 
             return drivers
+                .Where(d => d.Object != null)
                 .Select(d => 
                 {
                     var drv = d.Object;
@@ -179,19 +182,53 @@ namespace GrabExpress.Blazor.Services
 
         public async Task<List<Delivery>> GetDriverJobsAsync(string driverId)
         {
-            var deliveries = await _firebaseClient
-                .Child("Deliveries")
-                .OnceAsync<Delivery>();
+            try
+            {
+                var deliveries = await _firebaseClient
+                    .Child("Deliveries")
+                    .OnceAsync<Delivery>();
 
-            return deliveries
-                .Select(d => 
-                {
-                    var delivery = d.Object;
-                    delivery.DeliveryId = d.Key;
-                    return delivery;
-                })
-                .Where(d => d.DriverId == driverId)
-                .ToList();
+                return deliveries
+                    .Where(d => d.Object != null)
+                    .Select(d => 
+                    {
+                        var delivery = d.Object;
+                        delivery.DeliveryId = d.Key;
+                        return delivery;
+                    })
+                    .Where(d => d.DriverId == driverId)
+                    .ToList();
+            }
+            catch
+            {
+                return new List<Delivery>();
+            }
+        }
+
+        public async Task<List<Delivery>> GetPendingJobsAsync()
+        {
+            try
+            {
+                var deliveries = await _firebaseClient
+                    .Child("Deliveries")
+                    .OnceAsync<Delivery>();
+
+                return deliveries
+                    .Where(d => d.Object != null && 
+                               (string.IsNullOrEmpty(d.Object.DriverId) || d.Object.DriverId == "") && 
+                               d.Object.DeliveryStatus == "Pending")
+                    .Select(d => 
+                    {
+                        var delivery = d.Object;
+                        delivery.DeliveryId = d.Key;
+                        return delivery;
+                    })
+                    .ToList();
+            }
+            catch
+            {
+                return new List<Delivery>();
+            }
         }
 
         public async Task<List<Driver>> GetAllDriversAsync()
@@ -213,6 +250,7 @@ namespace GrabExpress.Blazor.Services
                     .ToHashSet();
 
                 return drivers
+                    .Where(d => d.Object != null)
                     .Select(d => 
                     {
                         var drv = d.Object;
@@ -238,19 +276,29 @@ namespace GrabExpress.Blazor.Services
 
         public async Task<List<Delivery>> GetAllDeliveriesAsync()
         {
-            var deliveries = await _firebaseClient
-                .Child("Deliveries")
-                .OnceAsync<Delivery>();
+            try
+            {
+                var deliveries = await _firebaseClient
+                    .Child("Deliveries")
+                    .OnceAsync<Delivery>();
 
-            return deliveries
-                .Select(d => 
-                {
-                    var delivery = d.Object;
-                    delivery.DeliveryId = d.Key;
-                    return delivery;
-                })
-                .ToList();
+                return deliveries
+                    .Where(d => d.Object != null)
+                    .Select(d => 
+                    {
+                        var delivery = d.Object;
+                        delivery.DeliveryId = d.Key;
+                        return delivery;
+                    })
+                    .ToList();
+            }
+            catch
+            {
+                return new List<Delivery>();
+            }
         }
+
+
 
         public async Task<Delivery?> GetCustomerActiveDeliveryAsync(string customerId)
         {
@@ -259,6 +307,7 @@ namespace GrabExpress.Blazor.Services
                 .OnceAsync<Delivery>();
 
             return deliveries
+                .Where(d => d.Object != null)
                 .Select(d => 
                 {
                     var delivery = d.Object;
@@ -277,6 +326,7 @@ namespace GrabExpress.Blazor.Services
                 .OnceAsync<Delivery>();
 
             return deliveries
+                .Where(d => d.Object != null)
                 .Select(d =>
                 {
                     var delivery = d.Object;
@@ -301,6 +351,9 @@ namespace GrabExpress.Blazor.Services
                     .Child("Deliveries")
                     .Child(deliveryId)
                     .PutAsync(delivery);
+
+                // Lock driver to Busy
+                await UpdateDriverStatusAsync(driverId, "Busy");
             }
             else
             {
@@ -334,22 +387,7 @@ namespace GrabExpress.Blazor.Services
 
         public async Task UpdateDeliveryStatusAsync(string deliveryId, string status)
         {
-            try 
-            {
-                var delivery = await GetDeliveryAsync(deliveryId);
-                if (delivery != null)
-                {
-                    delivery.DeliveryStatus = status;
-                    await _firebaseClient
-                        .Child("Deliveries")
-                        .Child(deliveryId)
-                        .PutAsync(delivery);
-                    return;
-                }
-            }
-            catch { /* Fallback to patch if fetch fails */ }
-
-            // Fallback
+            // PutAsync treats the argument as raw JSON — the string must be quoted to be valid JSON.
             await _firebaseClient
                 .Child("Deliveries")
                 .Child(deliveryId)
@@ -367,46 +405,50 @@ namespace GrabExpress.Blazor.Services
 
         public IDisposable ListenToDelivery(string deliveryId, Action<Delivery> onDeliveryUpdated)
         {
-            // Fetch initial full state immediately
-            _ = Task.Run(async () =>
+            // Create a wrapper to manage the polling cycle
+            var poller = new DeliveryPoller(this, deliveryId, onDeliveryUpdated);
+            poller.Start();
+            return poller;
+        }
+
+        private class DeliveryPoller : IDisposable
+        {
+            private readonly DatabaseService _db;
+            private readonly string _deliveryId;
+            private readonly Action<Delivery> _callback;
+            private System.Threading.Timer? _timer;
+
+            public DeliveryPoller(DatabaseService db, string deliveryId, Action<Delivery> callback)
             {
-                try 
+                _db = db;
+                _deliveryId = deliveryId;
+                _callback = callback;
+            }
+
+            public void Start()
+            {
+                // Poll immediately, then every 3 seconds
+                _timer = new System.Threading.Timer(async _ => await PollAsync(), null, 0, 3000);
+            }
+
+            private async Task PollAsync()
+            {
+                try
                 {
-                    var initial = await GetDeliveryAsync(deliveryId);
-                    if (initial != null)
+                    var delivery = await _db.GetDeliveryAsync(_deliveryId);
+                    if (delivery != null)
                     {
-                        initial.DeliveryId = deliveryId;
-                        onDeliveryUpdated(initial);
+                        delivery.DeliveryId = _deliveryId;
+                        _callback(delivery);
                     }
                 }
-                catch { }
-            });
+                catch { /* Ignore background polling errors */ }
+            }
 
-            // Listen for future changes — always re-fetch the FULL object
-            // because Firebase patch events only carry the changed field (e.g.
-            // only DeliveryStatus), leaving DriverId null in d.Object.
-            return _firebaseClient
-                .Child("Deliveries")
-                .AsObservable<Delivery>()
-                .Subscribe(d =>
-                {
-                    if (d.Key == deliveryId && d.Object != null)
-                    {
-                        _ = Task.Run(async () =>
-                        {
-                            try
-                            {
-                                var full = await GetDeliveryAsync(deliveryId);
-                                if (full != null)
-                                {
-                                    full.DeliveryId = deliveryId;
-                                    onDeliveryUpdated(full);
-                                }
-                            }
-                            catch { }
-                        });
-                    }
-                });
+            public void Dispose()
+            {
+                _timer?.Dispose();
+            }
         }
 
         // Payment Methods

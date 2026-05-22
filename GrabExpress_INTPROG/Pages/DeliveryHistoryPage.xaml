@@ -1,57 +1,246 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:GrabExpress_INTPROG.Pages"
              x:Class="GrabExpress_INTPROG.Pages.DeliveryHistoryPage"
-             Title="Delivery History"
-             BackgroundColor="#F4F6F9"
-             Shell.NavBarIsVisible="False">
+             x:DataType="pages:DeliveryHistoryPage"
+             BackgroundColor="#F7F9FC"
+             Title="Delivery History">
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid>
+        <!-- Main List using CollectionView -->
+        <CollectionView x:Name="HistoryCollectionView" 
+                        ItemsSource="{Binding FilteredItems}" 
+                        SelectionMode="None">
+            
+            <!-- Header layout scrolls with the list -->
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="20,15" Spacing="20">
+                    
+                    <!-- Header with Back Button -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5,0,10">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Delivery History" FontSize="24" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                            <Label Text="View stats and review completed bookings" FontSize="13" TextColor="#666666"/>
+                        </VerticalStackLayout>
+                        <Border BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 20" Padding="12,8" Grid.Column="1">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnBackTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="← Back" FontSize="13" FontAttributes="Bold" TextColor="#4A5568"/>
+                        </Border>
+                    </Grid>
 
-        <!-- Header -->
-        <Border Grid.Row="0" BackgroundColor="#00B14F" StrokeThickness="0" Padding="20,18,20,22">
-            <Grid ColumnDefinitions="Auto,*">
-                <Border Grid.Column="0" BackgroundColor="#009940" StrokeThickness="0"
-                        StrokeShape="RoundRectangle 20" WidthRequest="36" HeightRequest="36"
-                        VerticalOptions="Center">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnBackTapped"/>
-                    </Border.GestureRecognizers>
-                    <Label Text="←" FontSize="18" TextColor="White"
-                           HorizontalOptions="Center" VerticalOptions="Center"/>
-                </Border>
-                <VerticalStackLayout Grid.Column="1" Margin="14,0,0,0" VerticalOptions="Center">
-                    <Label Text="📋 Delivery History" TextColor="White"
-                           FontSize="18" FontAttributes="Bold"/>
-                    <Label Text="Your past deliveries" TextColor="#C8F5D8" FontSize="12"/>
+                    <!-- Stats Cards Section -->
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" HeightRequest="85">
+                        <!-- Total Spend -->
+                        <Border Grid.Column="0" BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="12,10">
+                            <VerticalStackLayout VerticalOptions="Center">
+                                <Label Text="SPENT" FontSize="9" FontAttributes="Bold" TextColor="#A0AEC0" Margin="0,0,0,2"/>
+                                <Label x:Name="TotalSpentLabel" Text="₱0.00" FontSize="14" FontAttributes="Bold" TextColor="#00B14F"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Completed -->
+                        <Border Grid.Column="1" BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="12,10">
+                            <VerticalStackLayout VerticalOptions="Center">
+                                <Label Text="TRIPS" FontSize="9" FontAttributes="Bold" TextColor="#A0AEC0" Margin="0,0,0,2"/>
+                                <Label x:Name="CompletedCountLabel" Text="0" FontSize="14" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Active -->
+                        <Border Grid.Column="2" BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="12,10">
+                            <VerticalStackLayout VerticalOptions="Center">
+                                <Label Text="ACTIVE" FontSize="9" FontAttributes="Bold" TextColor="#A0AEC0" Margin="0,0,0,2"/>
+                                <Label x:Name="ActiveCountLabel" Text="0" FontSize="14" FontAttributes="Bold" TextColor="#FF9F00"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <!-- Search Input -->
+                    <Border BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 24" Padding="15,4">
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Label Grid.Column="0" Text="🔍" FontSize="15" VerticalOptions="Center" Margin="0,0,8,0"/>
+                            <Entry Grid.Column="1" x:Name="SearchEntry" Placeholder="Search locations..." TextChanged="OnSearchTextChanged" FontSize="13" TextColor="#1A1A1A"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Filter Pills using HorizontalStackLayout -->
+                    <HorizontalStackLayout Spacing="8">
+                        <Border x:Name="PillAll" BackgroundColor="#00B14F" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="12,6">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnFilterAllTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="LabelAll" Text="All" TextColor="White" FontSize="12" FontAttributes="Bold"/>
+                        </Border>
+                        <Border x:Name="PillActive" BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="12,6">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnFilterActiveTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="LabelActive" Text="Active" TextColor="#4A5568" FontSize="12" FontAttributes="Bold"/>
+                        </Border>
+                        <Border x:Name="PillCompleted" BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="12,6">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnFilterCompletedTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="LabelCompleted" Text="Completed" TextColor="#4A5568" FontSize="12" FontAttributes="Bold"/>
+                        </Border>
+                        <Border x:Name="PillCancelled" BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="12,6">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnFilterCancelledTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="LabelCancelled" Text="Cancelled" TextColor="#4A5568" FontSize="12" FontAttributes="Bold"/>
+                        </Border>
+                    </HorizontalStackLayout>
+
                 </VerticalStackLayout>
-            </Grid>
-        </Border>
+            </CollectionView.Header>
 
-        <!-- Body -->
-        <ScrollView Grid.Row="1">
-            <VerticalStackLayout Padding="20,20,20,30" Spacing="12">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="pages:DeliveryHistoryItemViewModel">
+                    <Grid Padding="20,0,20,12">
+                        <Border BackgroundColor="White" Stroke="#E2E8F0" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="16">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCardTapped" CommandParameter="{Binding .}"/>
+                            </Border.GestureRecognizers>
+                            <Grid RowDefinitions="Auto, Auto, Auto" RowSpacing="12">
+                                
+                                <!-- Top Row -->
+                                <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
+                                    <Label Grid.Column="0" Text="{Binding BookingTimeFormatted}" FontSize="11" TextColor="#718096" VerticalOptions="Center"/>
+                                    <Border Grid.Column="1" BackgroundColor="{Binding StatusBgColor}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="8,4">
+                                        <Label Text="{Binding StatusText}" TextColor="{Binding StatusTextColor}" FontSize="10" FontAttributes="Bold"/>
+                                    </Border>
+                                </Grid>
 
-                <!-- Loading -->
-                <ActivityIndicator x:Name="LoadingIndicator" IsRunning="True" IsVisible="True"
-                                   Color="#00B14F" HorizontalOptions="Center" Margin="0,40,0,0"/>
+                                <!-- Middle Path Timeline -->
+                                <VerticalStackLayout Grid.Row="1" Spacing="8">
+                                    <!-- Pickup -->
+                                    <Grid ColumnDefinitions="Auto, *">
+                                        <Ellipse Grid.Column="0" WidthRequest="8" HeightRequest="8" Fill="#00B14F" VerticalOptions="Center" Margin="0,0,10,0"/>
+                                        <Label Grid.Column="1" Text="{Binding PickupLocation}" FontSize="13" TextColor="#2D3748" LineBreakMode="TailTruncation"/>
+                                    </Grid>
+                                    <!-- Dropoff -->
+                                    <Grid ColumnDefinitions="Auto, *">
+                                        <Ellipse Grid.Column="0" WidthRequest="8" HeightRequest="8" Fill="#E53E3E" VerticalOptions="Center" Margin="0,0,10,0"/>
+                                        <Label Grid.Column="1" Text="{Binding DropoffLocation}" FontSize="13" TextColor="#2D3748" LineBreakMode="TailTruncation"/>
+                                    </Grid>
+                                </VerticalStackLayout>
 
-                <!-- Empty state -->
-                <VerticalStackLayout x:Name="EmptyState" IsVisible="False"
-                                     HorizontalOptions="Center" Spacing="12"
-                                     Margin="0,60,0,0">
-                    <Label Text="📭" FontSize="56" HorizontalOptions="Center"/>
-                    <Label Text="No deliveries yet" FontSize="16" FontAttributes="Bold"
-                           TextColor="#444444" HorizontalOptions="Center"/>
-                    <Label Text="Your completed and cancelled&#10;deliveries will appear here."
-                           FontSize="13" TextColor="#888888" HorizontalTextAlignment="Center"/>
+                                <!-- Bottom Row -->
+                                <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Padding="0,8,0,0">
+                                    <VerticalStackLayout Grid.Column="0">
+                                        <Label Text="Delivery Fee" FontSize="10" TextColor="#718096"/>
+                                        <Label Text="{Binding FeeFormatted}" FontSize="14" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                                    </VerticalStackLayout>
+                                    <Button Grid.Column="1" Text="Receipt" FontSize="11" FontAttributes="Bold" 
+                                            HeightRequest="30" Padding="12,0" BackgroundColor="#EDF2F7" TextColor="#4A5568" 
+                                            CornerRadius="15" Clicked="OnReceiptClicked" CommandParameter="{Binding .}"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <!-- Empty View -->
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="0,40" Spacing="15" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="📦" FontSize="48" HorizontalOptions="Center"/>
+                    <Label Text="No Bookings Found" FontSize="16" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalOptions="Center"/>
+                    <Label Text="Your history is empty or matches no filters." FontSize="12" TextColor="#888888" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
                 </VerticalStackLayout>
+            </CollectionView.EmptyView>
+        </CollectionView>
 
-                <!-- Cards injected by code -->
-                <VerticalStackLayout x:Name="HistoryContainer" Spacing="10"/>
+        <!-- Receipt Modal Popup Layer -->
+        <Grid x:Name="ReceiptModalOverlay" IsVisible="False" BackgroundColor="#80000000" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseReceiptTapped"/>
+            </Grid.GestureRecognizers>
+            <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 24" 
+                    WidthRequest="320" HeightRequest="450" HorizontalOptions="Center" VerticalOptions="Center" Padding="0">
+                <Border.Shadow>
+                    <Shadow Brush="#00000030" Offset="0,4" Radius="15" Opacity="0.25"/>
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnModalBodyTapped"/>
+                </Border.GestureRecognizers>
+                <Grid RowDefinitions="Auto, *, Auto">
+                    <!-- Top Green Banner -->
+                    <Border Grid.Row="0" BackgroundColor="#00B14F" StrokeThickness="0" Padding="16,20" StrokeShape="RoundRectangle 24, 24, 0, 0">
+                        <VerticalStackLayout HorizontalOptions="Center">
+                            <Label Text="GrabExpress Receipt" TextColor="White" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
+                            <Label Text="Transaction Details" TextColor="#C8F5D8" FontSize="11" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
 
-            </VerticalStackLayout>
-        </ScrollView>
+                    <!-- Scrollable Receipt Body -->
+                    <ScrollView Grid.Row="1" Padding="20">
+                        <VerticalStackLayout Spacing="16">
+                            
+                            <!-- Reference Hash -->
+                            <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                <Label Text="Reference ID" FontSize="10" TextColor="#718096" HorizontalOptions="Center"/>
+                                <Label x:Name="ReceiptRefLabel" Text="#12345" FontSize="12" FontAttributes="Bold" TextColor="#2D3748" HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
 
+                            <!-- Route -->
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="ROUTE DETAILS" FontSize="10" FontAttributes="Bold" TextColor="#718096"/>
+                                <Border BackgroundColor="#F7F9FC" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                                    <VerticalStackLayout Spacing="6">
+                                        <Label Text="Pickup Point" FontSize="9" FontAttributes="Bold" TextColor="#A0AEC0"/>
+                                        <Label x:Name="ReceiptPickupLabel" Text="" FontSize="11" TextColor="#2D3748" LineBreakMode="WordWrap"/>
+                                        <BoxView HeightRequest="1" BackgroundColor="#E2E8F0" Margin="0,4"/>
+                                        <Label Text="Dropoff Point" FontSize="9" FontAttributes="Bold" TextColor="#A0AEC0"/>
+                                        <Label x:Name="ReceiptDropoffLabel" Text="" FontSize="11" TextColor="#2D3748" LineBreakMode="WordWrap"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <!-- Driver Info -->
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="ASSIGNED DRIVER" FontSize="10" FontAttributes="Bold" TextColor="#718096"/>
+                                <Border BackgroundColor="#F7F9FC" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12">
+                                    <VerticalStackLayout x:Name="ReceiptDriverContainer" Spacing="4">
+                                        <!-- Will populate dynamically -->
+                                    </VerticalStackLayout>
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <!-- Payment Detail -->
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="PAYMENT BREAKDOWN" FontSize="10" FontAttributes="Bold" TextColor="#718096"/>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Grid.Column="0" Text="Base Fare" FontSize="12" TextColor="#718096"/>
+                                    <Label Grid.Column="1" x:Name="ReceiptBaseFareLabel" Text="₱0.00" FontSize="12" TextColor="#2D3748" FontAttributes="Bold"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Grid.Column="0" Text="VAT Service Tax" FontSize="12" TextColor="#718096"/>
+                                    <Label Grid.Column="1" Text="₱0.00" FontSize="12" TextColor="#2D3748" FontAttributes="Bold"/>
+                                </Grid>
+                                <BoxView HeightRequest="1" BackgroundColor="#E2E8F0"/>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Grid.Column="0" Text="Total Amount Paid" FontSize="12" FontAttributes="Bold" TextColor="#2D3748"/>
+                                    <Label Grid.Column="1" x:Name="ReceiptTotalPaidLabel" Text="₱0.00" FontSize="14" FontAttributes="Bold" TextColor="#00B14F"/>
+                                </Grid>
+                            </VerticalStackLayout>
+
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <!-- Close Button -->
+                    <Border Grid.Row="2" BackgroundColor="White" Padding="20,10,20,15" StrokeThickness="0">
+                        <Button Text="Close" BackgroundColor="#00B14F" TextColor="White" FontAttributes="Bold" 
+                                CornerRadius="20" HeightRequest="40" Clicked="OnCloseReceiptClicked"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+        
     </Grid>
+
 </ContentPage>

@@ -167,6 +167,7 @@ namespace GrabExpress_INTPROG.Services
                 .OnceAsync<Driver>();
 
             return drivers
+                .Where(d => d.Object != null)
                 .Select(d => 
                 {
                     var drv = d.Object;
@@ -184,6 +185,7 @@ namespace GrabExpress_INTPROG.Services
                 .OnceAsync<Delivery>();
 
             return deliveries
+                .Where(d => d.Object != null)
                 .Select(d => 
                 {
                     var delivery = d.Object;
@@ -243,6 +245,7 @@ namespace GrabExpress_INTPROG.Services
                 .OnceAsync<Delivery>();
 
             return deliveries
+                .Where(d => d.Object != null)
                 .Select(d => 
                 {
                     var delivery = d.Object;
@@ -259,6 +262,7 @@ namespace GrabExpress_INTPROG.Services
                 .OnceAsync<Delivery>();
 
             return deliveries
+                .Where(d => d.Object != null)
                 .Select(d => 
                 {
                     var delivery = d.Object;
@@ -277,6 +281,7 @@ namespace GrabExpress_INTPROG.Services
                 .OnceAsync<Delivery>();
 
             return deliveries
+                .Where(d => d.Object != null)
                 .Select(d =>
                 {
                     var delivery = d.Object;
@@ -355,6 +360,20 @@ namespace GrabExpress_INTPROG.Services
                 .Child(deliveryId)
                 .Child("DeliveryStatus")
                 .PutAsync($"\"{status}\"");
+        }
+
+        public async Task DeclineDeliveryAsync(string deliveryId, string driverId)
+        {
+            var delivery = await GetDeliveryAsync(deliveryId);
+            if (delivery != null)
+            {
+                delivery.DeclinedDrivers ??= new System.Collections.Generic.Dictionary<string, bool>();
+                delivery.DeclinedDrivers[driverId] = true;
+                await _firebaseClient
+                    .Child("Deliveries")
+                    .Child(deliveryId)
+                    .PutAsync(delivery);
+            }
         }
 
         public async Task<Delivery> GetDeliveryAsync(string deliveryId)
